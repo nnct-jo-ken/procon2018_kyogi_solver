@@ -1,0 +1,4 @@
+procon2018_kyogi_solver.egg-info/PKG-INFO
+procon2018_kyogi_solver.egg-info/SOURCES.txt
+procon2018_kyogi_solver.egg-info/dependency_links.txt
+procon2018_kyogi_solver.egg-info/top_level.txt
