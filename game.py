@@ -5,6 +5,8 @@ import random
 import copy
 import load_field_file
 
+DEBUG = False    #デバッグ時はTrue
+
 EMPTY = 0       #空のマス
 OWN = 3         #自チーム
 OPPONENT = -3   #敵チーム
@@ -101,8 +103,8 @@ class field:
             return field.can_move(self.own_a1) or field.can_move(self.own_a2) \
                     or field.can_move(self.opponent_a1) or field.can_move(self.opponent_a2) #誰かがTrueならTrue
         
-        for i in range(-1, 1):  #width
-            for j in range(-1, 1):  #height
+        for i in range(-1, 2):  #width -1から1
+            for j in range(-1, 2):  #height -1から1
                 if self.can_move_pos([player['x'] + i, player['y'] + j]) is False:    #範囲外
                     continue
                 return True
@@ -113,15 +115,23 @@ class field:
         hands = []  #可能な移動位置
         #hand = [座標, ひっくり返すか（Trueならひっくり返す Falseなら移動）]　というデータ形式
 
-        for i in range(-1, 1):  #width
-            for j in range(-1, 1):  #height
-                if self.can_move_pos([self.conv_turn_pos(player)['x'] + i, self.conv_turn_pos(player)['y'] + j]) is False:  #範囲外
+        x = self.conv_turn_pos(player)['x'] #座標に変換
+        y = self.conv_turn_pos(player)['y']
+
+        for i in range(-1, 2):  #width -1から1
+            for j in range(-1, 2):  #height -1から1
+                #print("x+i:{} y+j:{}".format(x+i, y+j))
+                if self.can_move_pos([x + i, y + j]) is False:  #範囲外
                     continue
-                elif self.state[self.conv_turn_pos(player)['x']+i][self.conv_turn_pos(player)['y']+j] == EMPTY:  #どちらの陣でもない
-                    hands.append([{'x':self.conv_turn_pos(player)['x']+i, 'y':self.conv_turn_pos(player)['y']+j}, False])    #移動
+                elif self.state[x + i][y + j] == EMPTY:  #どちらの陣でもない
+                    hands.append([{'x':x+i, 'y':y+j}, False])    #移動
                 else:   #どちらかの陣地
-                    hands.append([{'x':self.conv_turn_pos(player)['x']+i, 'y':self.conv_turn_pos(player)['y']+j} , False]) #移動
-                    hands.append([{'x':self.conv_turn_pos(player)['x']+i, 'y':self.conv_turn_pos(player)['y']+j} , True])  #ひっくり返すだけ
+                    hands.append([{'x':x+i, 'y':y+j} , False]) #移動
+                    if i != 0 or j != 0:    #その場をひっくり返すとエージェントの居場所がなくなる
+                        hands.append([{'x':x+i, 'y':y+j} , True])  #ひっくり返すだけ
+        
+        if DEBUG is True:
+            print("player:{0} hands:{1}".format(player, hands))
 
         return hands
 
@@ -136,6 +146,12 @@ class field:
             raise Exception("Can't move!")
         if hand[1] is False:    #移動なら
             self.state[hand[0]['x']][hand[0]['y']] = player  #タイルを置く
+            #移動元はチームの値を置く　始
+            if player > 0:  #OWN
+                self.state[self.conv_turn_pos(player)['x']][self.conv_turn_pos(player)['y']] = OWN
+            elif player < 0:    #OPPONENT
+                self.state[self.conv_turn_pos(player)['x']][self.conv_turn_pos(player)['y']] = OPPONENT
+            #移動元はチームの値を置く　終
             self.conv_turn_pos(player)['x'] = hand[0]['x']  #エージェントの移動
             self.conv_turn_pos(player)['y'] = hand[0]['y']
         else:
@@ -147,8 +163,8 @@ class field:
         own_tile, own_territory = 0, 0
         opponent_tile, opponent_territory = 0, 0
 
-        for i in range(0, self.width-1):
-            for j in range(0, self.height-1):
+        for i in range(0, self.width):
+            for j in range(0, self.height):
                 if self.state[i][j] > 0: own_tile += self.value[i][j]    #OWN_1とかが1以上だから
                 if self.state[i][j] < 0: opponent_tile += self.value[i][j]   #OPPONEN_1とかが-1以下だから
                 if self.state[i][j] == EMPTY:   #囲まれているか判定

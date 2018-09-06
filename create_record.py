@@ -5,7 +5,7 @@ import numpy as np
 import game
 import player
 
-DEBUG = True
+DEBUG = True    #デバッグ時はTrue
 
 RECORD_NUM = 10000  #対局データ作成数
 TURN = 60   #1試合あたりのターン数
@@ -39,32 +39,31 @@ def save_record(field, won):
     except:
         os.remove(path)
 
-for i in range(1, RECORD_NUM):
+player = (game.OWN_1, game.OWN_2, game.OPPONENT_1, game.OPPONENT_2) #エージェント識別用タプル（リストの変更できないヴァージョン）
+
+for i in range(1, RECORD_NUM+1):
     print("game:", i, end='\r')
 
     field = game.field()        #フィールド作成
     field.create_rand_field()   #乱数で初期化
 
-    for i in range(TURN):   #ターン数まで繰り返す
-        #エージェントに一通り行動させる（値で管理するとか、もっと考えれば良かった...）
-
-        for turn in range(game.OWN_1, game.OWN_2):  #味方
-            hand = players[turn].select(field, turn)
-            if hand is not None:    #次の手があれば
-                field.status.append(field.state)
-                field.players.append(turn)
-                field.state = field.move(field.state, turn, hand)
-
-        for turn in range(game.OPPONENT_1, game.OPPONENT_2, -1):   #敵 -1,-2の順に辿りたいから、stepは-1
-            hand = players[turn].select(field, turn)
-            if hand is not None:    #次の手があれば
-                field.status.append(field.state)
-                field.players.append(turn)
-                field.state = field.move(field.state, turn, hand)
+    for _ in range(TURN):   #ターン数まで繰り返す   _はカウンタ変数を使わないという意味
+        #全エージェントに一通り行動させる
 
         #フィールドの状態を確認（デバッグ用）
-        time.sleep(1)
-        field.print_field()
+        if DEBUG is True:
+            time.sleep(1)
+            print() #一行空ける
+            field.print_field()
+
+        for turn in player:   #敵 -1,-2の順に辿りたいから、stepは-1
+            hand = players[turn].select(field, turn)
+            if DEBUG is True:
+                print("player:{0} hand:{1}".format(turn, hand))
+            if hand is not None:    #次の手があれば
+                field.status.append(field.state)
+                field.players.append(turn)
+                field.state = field.move(field.state, turn, hand)
 
     won = field.judge(field.state)      #勝者
     field.status.append(field.state)    #終了時の盤面の保存
