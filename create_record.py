@@ -5,6 +5,8 @@ import numpy as np
 import game
 import player
 
+DEBUG = True
+
 RECORD_NUM = 10000  #対局データ作成数
 TURN = 60   #1試合あたりのターン数
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "record")  #出力ディレクトリ
@@ -17,6 +19,8 @@ players = {
 }
 
 def save_record(field, won):
+    if DEBUG is True: return    #デバッグ時はファイル生成をしない
+    
     X_value = np.array(field.value).reshape([-1, field.width, field.height])
     X_state = np.array(field.state).reshape([-1, field.width, field.height])
     X_players = np.array(field.players).reshape([-1, 1])
@@ -57,6 +61,10 @@ for i in range(1, RECORD_NUM):
                 field.status.append(field.state)
                 field.players.append(turn)
                 field.state = field.move(field.state, turn, hand)
+
+        #フィールドの状態を確認（デバッグ用）
+        time.sleep(1)
+        field.print_field()
 
     won = field.judge(field.state)      #勝者
     field.status.append(field.state)    #終了時の盤面の保存

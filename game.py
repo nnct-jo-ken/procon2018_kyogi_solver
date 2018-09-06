@@ -73,7 +73,7 @@ class field:
                         if i > self.width / 2:
                             self.value[i][j] = self.value[self.width-i-1][j]
                 if bunkatsu == 0 or bunkatsu == 2:    #垂直に線対称
-                    if self.width % 2 == 0:  #偶数
+                    if self.height % 2 == 0:  #偶数
                         if j > self.height / 2 - 1:  #右半分
                             self.value[i][j] = self.value[i][self.height-j-1]
                     else:
