@@ -56,7 +56,7 @@ for i in range(1, RECORD_NUM+1):
             print() #一行空ける
             field.print_field()
 
-        for turn in player:   #敵 -1,-2の順に辿りたいから、stepは-1
+        for turn in player: #各エージェントごとに行動させる
             hand = players[turn].select(field, turn)
             if DEBUG is True:
                 print("player:{0} hand:{1}".format(turn, hand))
