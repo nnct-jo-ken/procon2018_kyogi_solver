@@ -45,15 +45,17 @@ for i in range(1, RECORD_NUM+1):
     print("game:", i, end='\r')
 
     field = game.field()        #フィールド作成
+    field.clear()   #フィールド情報をクリア
     field.create_rand_field()   #乱数で初期化
 
-    for _ in range(TURN):   #ターン数まで繰り返す   _はカウンタ変数を使わないという意味
+    for j in range(TURN):   #ターン数まで繰り返す   _はカウンタ変数を使わないという意味
         #全エージェントに一通り行動させる
 
         #フィールドの状態を確認（デバッグ用）
         if DEBUG is True:
             time.sleep(1)
             print() #一行空ける
+            print("turn: {0}".format(j))
             field.print_field()
 
         for turn in player: #各エージェントごとに行動させる
@@ -69,3 +71,7 @@ for i in range(1, RECORD_NUM+1):
     field.status.append(field.state)    #終了時の盤面の保存
 
     save_record(field, won)  #対局データの保存
+    if DEBUG is True:
+        print()
+        print(field.status)
+        print("len: {}", len(field.status))

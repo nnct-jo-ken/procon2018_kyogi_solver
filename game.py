@@ -26,6 +26,15 @@ class field:
     status = [] #ターンごとの陣形を管理
     players = []    #ターンごとのエージェントを管理
 
+    def clear(self):    #フィールド情報をクリア
+        self.width = 0   #縦
+        self.height = 0  #横
+        self.own_a1, self.own_a2, self.opponent_a1, self.opponent_a2 = {'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}   #エージェントの位置
+        self.value = np.zeros([self.width, self.height], dtype=int)    #タイルの得点
+        self.state = np.zeros([self.width, self.height], dtype=int)    #陣形
+        self.status = [] #ターンごとの陣形を管理
+        self.players = []    #ターンごとのエージェントを管理
+
     def create_rand_field(self):    #フィールドを生成し、タイルに適当な点数を割り振る
         sum_tile = random.randint(80, 144)  #タイルの数
         self.width = random.randint(7, 12)  #縦の大きさをランダムに決定 80//12=7より、7が一辺の最小サイズ
