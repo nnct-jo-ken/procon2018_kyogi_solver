@@ -30,7 +30,7 @@ def save_record(field, won):
 
     np.savez(path,              #対局データの保存
              X_value=X_value,
-             X_state=X_status,
+             X_status=X_status,
              X_players=X_players,
              won=won)
 
