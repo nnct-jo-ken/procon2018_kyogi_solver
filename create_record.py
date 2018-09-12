@@ -23,7 +23,7 @@ def save_record(field, won):
     
     X_value = np.array(field.value).reshape([field.width, field.height])
     X_status = np.array(field.status).reshape([-1, field.width, field.height])
-    X_players = np.array(field.players).reshape([-1, 1])
+    X_players = np.array(field.players).reshape([-1])
 
     now = int(round(time.time()*1000))
     path = os.path.join(OUTPUT_DIR, "{0}.npz".format(now))  #ファイル名の指定
