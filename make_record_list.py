@@ -5,8 +5,8 @@ import random
 
 #引数の設定
 parser = argparse.ArgumentParser()
-parser.add_argument('dir', type=str, default="./record", help='Directory where records are saved')  #対局データが保存されているフォルダ
-parser.add_argument('--ratio', type=float, defaul=0.9, help="Proportion of records for train")  #訓練用データの割合
+parser.add_argument('--dir', type=str, default="./record", help='Directory where records are saved')  #対局データが保存されているフォルダ
+parser.add_argument('--ratio', type=float, default=0.9, help="Proportion of records for train")  #訓練用データの割合
 args = parser.parse_args()
 
 record_list = []    #対局データファイル一覧

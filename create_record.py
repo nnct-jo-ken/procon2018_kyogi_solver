@@ -21,16 +21,16 @@ players = {
 def save_record(field, won):
     if DEBUG is True: return    #デバッグ時はファイル生成をしない
     
-    X_value = np.array(field.value).reshape([-1, field.width, field.height])
-    X_state = np.array(field.state).reshape([-1, field.width, field.height])
-    X_players = np.array(field.players).reshape([-1, 1])
+    X_value = np.array(field.value).reshape([field.width, field.height])
+    X_status = np.array(field.status).reshape([-1, field.width, field.height])
+    X_players = np.array(field.players).reshape([-1])
 
     now = int(round(time.time()*1000))
     path = os.path.join(OUTPUT_DIR, "{0}.npz".format(now))  #ファイル名の指定
 
     np.savez(path,              #対局データの保存
              X_value=X_value,
-             X_state=X_state,
+             X_status=X_status,
              X_players=X_players,
              won=won)
 
@@ -38,6 +38,12 @@ def save_record(field, won):
         np.load(path)
     except:
         os.remove(path)
+
+    if DEBUG is True:   #対局データ中の各種データのサイズを確認
+        print("value\n{}".format(len(X_value)))
+        print("status\n{}".format(len(X_status)))
+        print("player\n{}".format(len(X_players)))
+        print("won\n{}".format(won))
 
 player = (game.OWN_1, game.OWN_2, game.OPPONENT_1, game.OPPONENT_2) #エージェント識別用タプル（リストの変更できないヴァージョン）
 
