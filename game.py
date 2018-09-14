@@ -41,7 +41,6 @@ class field:
         while sum_tile // self.width > 12:  #heightが13以上だとルールに反しているから、12以下になるまで乱数生成
             self.width = random.randint(7, 12)
         self.height = sum_tile // self.width    #横の大きさをランダムに決定 上のループで、ルールに適合するはず
-        print("{0} {1}".format(self.width, self.height))
         self.value = np.resize(self.value, (self.width, self.height))
         self.state = np.resize(self.state, (self.width, self.height))
         self.own_a1['x'] = random.randint(0, self.width//2) #エージェントの位置をランダムに決定
