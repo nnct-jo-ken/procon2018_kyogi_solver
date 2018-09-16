@@ -19,6 +19,7 @@ EPOCH = 3 #1つの訓練データを何回学習させるか
 TURN = 32
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "./output/model.pth")       #モデルの保存パス
+BEST_MODEL_PATH = os.path.join(os.path.dirname(__file__), "./output/best_model.pth")       #最善モデルの保存パス
 OPTIMIZER_PATH = os.path.join(os.path.dirname(__file__), "./output/optimizer.pth")       #オプティマイザの保存パス
 RECORD_LIST_PATH = os.path.join(os.path.dirname(__file__), "./recordlist_train")         #対局データ一覧表（学習用）の保存パス
 TEST_RECORD_LIST_PATH = os.path.join(os.path.dirname(__file__), "./recordlist_test") #対局データ一覧表（テスト用）の保存パス
@@ -44,13 +45,13 @@ else:
 criterion = nn.MSELoss()   #推論値と理論値の差を計算
 
 
-for i in range(1, EPOCH+1):   #エポックを回す
-    print("epoch:", i)          #現在のエポック数（何回目のループか）
+for epoch in range(1, EPOCH+1):   #エポックを回す
+    print("epoch:", epoch)          #現在のエポック数（何回目のループか）
 
     record_index = 0
 
     while True: #全学習データを扱う
-        print("epoch:{0} record:{1}".format(i, record_index))
+        print("epoch:{0} record:{1}".format(epoch, record_index))
 
         # 一括でデータセットを作った場合
         # x_batch = x_train[j : j+BATCH_SIZE] #訓練データをバッチサイズ分取り出し
@@ -96,8 +97,18 @@ for i in range(1, EPOCH+1):   #エポックを回す
             loss.backward()
             optimizer.step()
 
+            # if i % 1000 == 999:    #ミニバッチ1000個ごとにロスの表示
+            #     print('[%d, %5d] loss: %.3f' %
+            #         (epoch + 1, i + 1, total_loss / 1000))
+            #     total_loss = 0.0
             print(loss)
 
-
+            model.save(MODEL_PATH)  #モデルの保存
+            if i%50 == 0:   #ミニバッチ50個ごとにモデルが最善か確認
+                pass
+                #実際にランダムさんと戦わせて、勝率を見る
+                #勝率が今までよりも高ければ、そのモデルを別途保存
 
         record_index += BATCH_SIZE
+
+print("Finished Training")
