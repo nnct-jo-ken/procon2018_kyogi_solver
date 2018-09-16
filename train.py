@@ -101,9 +101,11 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
             #     print('[%d, %5d] loss: %.3f' %
             #         (epoch + 1, i + 1, total_loss / 1000))
             #     total_loss = 0.0
+            
+            # print("x:{0} t:{1} y:{2} loss:{3}".format(x, t, y, loss))
             print(loss)
 
-            model.save(MODEL_PATH)  #モデルの保存
+            torch.save(model.state_dict(), MODEL_PATH)  #モデルの保存
             if i%50 == 0:   #ミニバッチ50個ごとにモデルが最善か確認
                 pass
                 #実際にランダムさんと戦わせて、勝率を見る
