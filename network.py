@@ -14,26 +14,40 @@ class Network(nn.Module):
     def __init__(self):
         #ニューラルネットワークを作成 <= 畳み込み(Conv2d)を使った方がいい（画像の特徴を抽出できる）と思うけれど、後回し
         super(Network, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=ch, kernel_size=(5, 5), stride=1, padding=0)
-        self.pool1 = nn.MaxPool2d(kernel_size=[2, 2], stride=1, padding=0)
-        self.conv2 = nn.Conv2d(in_channels=ch, out_channels=ch, kernel_size=(5, 5), stride=1, padding=0)
-        self.pool2 = nn.MaxPool2d(kernel_size=[2, 2], stride=1, padding=0)
-        self.conv3 = nn.Conv2d(in_channels=ch, out_channels=ch, kernel_size=(5, 5), stride=1, padding=0)
-        self.fc1 = nn.Linear(ch, 10)
-        self.fc2 = nn.Linear(10, 10)
-        self.fc3 = nn.Linear(10, 1)     #出力は勝ち負けを表す値1コ
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=ch, kernel_size=(4, 4), stride=1, padding=1)
+        self.pool1 = nn.MaxPool2d(kernel_size=[2, 2], stride=1, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=ch, out_channels=ch, kernel_size=(4, 4), stride=1, padding=1)
+        self.pool2 = nn.MaxPool2d(kernel_size=[2, 2], stride=1, padding=1)
+        self.conv3 = nn.Conv2d(in_channels=ch, out_channels=ch, kernel_size=(4, 4), stride=1, padding=1)
+        self.pool3 = nn.MaxPool2d(kernel_size=[2, 2], stride=1, padding=1)
+        self.fc1 = nn.Linear(ch * 12 * 12, 100)
+        self.fc2 = nn.Linear(100, 100)
+        self.fc3 = nn.Linear(100, 1)     #出力は、勝ち負けの値1コ
 
         # self.fc1 = nn.Linear(1, 10)   #入力はプレイヤーが1次元データだから、1 ニューロンは10
         # self.fc2 = nn.Linear(10, 10)
         # self.fc3 = nn.Linear(10, 1)     #出力は勝ち負けを表す値1コ
 
     def forward(self, x):
-        x = self.pool1(F.relu(self.conv1(x)))
+        # print(x.shape)
+        a = self.conv1(x)
+        b = F.relu(a)
+        x = self.pool1(b)
+        # print(x.shape)
+        # x = self.pool1(F.relu(self.conv1(x)))
         x = self.pool2(F.relu(self.conv2(x)))
-        x = x.view(-1, game.MAX_BOARD_SIZE * game.MAX_BOARD_SIZE)
+        # print(x.shape)
+        # x = self.pool3(F.relu(self.conv3(x)))
+        x = self.pool3(F.relu(self.conv3(x)))
+        # print(x.shape)
+        x = x.view(-1, ch * 12 * 12)
+        # print(x.shape)
         x = F.relu(self.fc1(x))
+        # print(x.shape)
         x = F.relu(self.fc2(x))
+        # print(x.shape)
         x = self.fc3(x)
+        # print(x.shape)
         return x
 
         # h1 = F.relu(self.fc1(x)) #中間層の活性化関数はReLU

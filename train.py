@@ -15,7 +15,7 @@ import game
 
 GAMMA = 0.97    #割引率
 BATCH_SIZE = 32 #一度に学習する局面数
-EPOCH = 100 #1つの訓練データを何回学習させるか
+EPOCH = 3 #1つの訓練データを何回学習させるか
 TURN = 32
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "./output/model.pth")       #モデルの保存パス
@@ -41,7 +41,7 @@ else:
     fine_tune = False
     optimizer = optim.Adam(model.parameters(), lr=0.1)
 
-criterion = nn.CrossEntropyLoss()   #推論値と理論値の差を計算
+criterion = nn.MSELoss()   #推論値と理論値の差を計算
 
 
 for i in range(1, EPOCH+1):   #エポックを回す
@@ -69,7 +69,14 @@ for i in range(1, EPOCH+1):   #エポックを回す
         # train_torch = torch.from_numpy(train_np).float()
         # target_torch = torch.from_numpy(target_np).long()
 
-        train = torch.utils.data.TensorDataset(torch.from_numpy(dataset[1]))
+        print(dataset[1].shape)
+
+        dataset[1] = dataset[1].reshape(len(dataset[1]), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)
+        dataset[3] = dataset[3].reshape(len(dataset[3]), 1, 1, 1)
+
+        print(dataset[1].shape)
+
+        train = torch.utils.data.TensorDataset(torch.from_numpy(dataset[1]).float(), torch.from_numpy(dataset[3]).float())
         train_loader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
 
         total_loss = 0
@@ -78,10 +85,18 @@ for i in range(1, EPOCH+1):   #エポックを回す
             x, t = torch.autograd.Variable(x), torch.autograd.Variable(t)
             optimizer.zero_grad()
             y = model(x)
+            t = t.reshape((32, 1))  #入力にラベルのデータの大きさを合わせる
+
+            # print(x.shape)
+            # print(y.shape)
+            # print(t.shape)
+
             loss = criterion(y, t)
-            total_loss += loss.data[0]
+            total_loss += loss.item()
             loss.backward()
             optimizer.step()
+
+            print(loss)
 
 
 
