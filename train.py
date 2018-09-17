@@ -34,7 +34,7 @@ else:
     model = network.Network()
 
 #オプティマイザが保存されていれば読み込み、なければ新規作成
-if os.path.exists(MODEL_PATH):
+if os.path.exists(OPTIMIZER_PATH):
     fine_tune = True
     optimizer = optim.Adam(model.parameters(), lr=0.1)
     optimizer.load_state_dict(torch.load(OPTIMIZER_PATH))
@@ -110,7 +110,9 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
                 pass
                 #実際にランダムさんと戦わせて、勝率を見る
                 #勝率が今までよりも高ければ、そのモデルを別途保存
-
+        
         record_index += BATCH_SIZE
+
+    torch.save(optimizer.state_dict(), OPTIMIZER_PATH)  #オプティマイザの保存
 
 print("Finished Training")
