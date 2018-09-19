@@ -107,7 +107,11 @@ class field:
         for i in range(1, self.width+1):  #最初はフィールドサイズが入っているから、とばす
             for j in range(0, self.height):
                 self.value[i-1][j] = int(value_nums[i][j].decode('ascii'))
-                self.state[i-1][j] = int(state_nums[i][j].decode('ascii'))
+                # self.state[i-1][j] = int(state_nums[i][j].decode('ascii'))
+                if int(state_nums[i][j].decode('ascii')) == 1:
+                    self.state[i-1][j] = OWN
+                elif int(state_nums[i][j].decode('ascii')) == 2:
+                    self.state[i-1][j] = OPPONENT
 
         self.own_a1['x'] = int(value_nums[self.width+1][0].decode('ascii'))
         self.own_a1['y'] = int(value_nums[self.width+1][1].decode('ascii'))
