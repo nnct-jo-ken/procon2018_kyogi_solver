@@ -97,6 +97,27 @@ class field:
         self.width, self.height, self.value, self.own_a1, self.own_a2 = load_field_file.load_field_file(path)
         self.state = np.resize(self.state, (self.width, self.height))
 
+    def create_from_gui(self, value_nums, state_nums):
+        self.width = int(value_nums[0][0].decode('ascii'))
+        self.height = int(value_nums[0][1].decode('ascii'))
+
+        self.value = np.resize(self.value, (self.width, self.height))
+        self.state = np.resize(self.state, (self.width, self.height))
+
+        for i in range(1, self.width+1):  #最初はフィールドサイズが入っているから、とばす
+            for j in range(0, self.height):
+                self.value[i-1][j] = int(value_nums[i][j].decode('ascii'))
+                self.state[i-1][j] = int(state_nums[i][j].decode('ascii'))
+
+        self.own_a1['x'] = int(value_nums[self.width+1][0].decode('ascii'))
+        self.own_a1['y'] = int(value_nums[self.width+1][1].decode('ascii'))
+        self.own_a2['x'] = int(value_nums[self.width+2][0].decode('ascii'))
+        self.own_a2['y'] = int(value_nums[self.width+2][1].decode('ascii'))
+        self.opponent_a1['x'] = int(value_nums[self.width+3][0].decode('ascii'))
+        self.opponent_a1['y'] = int(value_nums[self.width+3][1].decode('ascii'))
+        self.opponent_a2['x'] = int(value_nums[self.width+4][0].decode('ascii'))
+        self.opponent_a2['y'] = int(value_nums[self.width+4][1].decode('ascii'))
+
     def print_field(self):
         print(" width:{0}\n height:{1}\n own_a1:{2}\n own_a2:{3}\n opponent_a1:{4}\n opponent_a2:{5}" \
             .format(self.width, self.height, self.own_a1, self.own_a2, self.opponent_a1, self.opponent_a2))
