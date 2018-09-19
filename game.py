@@ -188,9 +188,6 @@ class field:
             elif player < 0:    #OPPONENT
                 self.state[self.conv_turn_pos(player)['x']][self.conv_turn_pos(player)['y']] = OPPONENT
             #移動元はチームの値を置く　終
-            self.state[hand[0]['x']][hand[0]['y']] = player  #移動先にタイルを置く
-            self.conv_turn_pos(player)['x'] = hand[0]['x']  #エージェントの移動
-            self.conv_turn_pos(player)['y'] = hand[0]['y']
         else:
             self.state[hand[0]['x']][hand[0]['y']] = EMPTY   #タイルを除去
 
