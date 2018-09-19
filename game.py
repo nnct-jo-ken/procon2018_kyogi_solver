@@ -113,14 +113,15 @@ class field:
                 elif int(state_nums[i][j].decode('ascii')) == 2:
                     self.state[i-1][j] = OPPONENT
 
-        self.own_a1['x'] = int(value_nums[self.width+1][0].decode('ascii'))
-        self.own_a1['y'] = int(value_nums[self.width+1][1].decode('ascii'))
-        self.own_a2['x'] = int(value_nums[self.width+2][0].decode('ascii'))
-        self.own_a2['y'] = int(value_nums[self.width+2][1].decode('ascii'))
-        self.opponent_a1['x'] = int(value_nums[self.width+3][0].decode('ascii'))
-        self.opponent_a1['y'] = int(value_nums[self.width+3][1].decode('ascii'))
-        self.opponent_a2['x'] = int(value_nums[self.width+4][0].decode('ascii'))
-        self.opponent_a2['y'] = int(value_nums[self.width+4][1].decode('ascii'))
+        #GUIとsolverで座標軸の扱い方が逆
+        self.own_a1['x'] = int(value_nums[self.width+1][1].decode('ascii'))
+        self.own_a1['y'] = int(value_nums[self.width+1][0].decode('ascii'))
+        self.own_a2['x'] = int(value_nums[self.width+2][1].decode('ascii'))
+        self.own_a2['y'] = int(value_nums[self.width+2][0].decode('ascii'))
+        self.opponent_a1['x'] = int(value_nums[self.width+3][1].decode('ascii'))
+        self.opponent_a1['y'] = int(value_nums[self.width+3][0].decode('ascii'))
+        self.opponent_a2['x'] = int(value_nums[self.width+4][1].decode('ascii'))
+        self.opponent_a2['y'] = int(value_nums[self.width+4][0].decode('ascii'))
 
     def print_field(self):
         print(" width:{0}\n height:{1}\n own_a1:{2}\n own_a2:{3}\n opponent_a1:{4}\n opponent_a2:{5}" \
