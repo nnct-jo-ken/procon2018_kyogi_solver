@@ -12,6 +12,7 @@ import torch.utils.data
 import network
 import train_data_creator
 import game
+import evaluate
 
 GAMMA = 0.97    #割引率
 BATCH_SIZE = 32 #一度に学習する局面数
@@ -44,6 +45,7 @@ else:
 
 criterion = nn.MSELoss()   #推論値と理論値の差を計算
 
+max_win_ratio = -1.0    #勝率の最高値
 
 for epoch in range(1, EPOCH+1):   #エポックを回す
     print("epoch:", epoch)          #現在のエポック数（何回目のループか）
@@ -70,12 +72,8 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         # train_torch = torch.from_numpy(train_np).float()
         # target_torch = torch.from_numpy(target_np).long()
 
-        print(dataset[1].shape)
-
         dataset[1] = dataset[1].reshape(len(dataset[1]), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)
         dataset[3] = dataset[3].reshape(len(dataset[3]), 1, 1, 1)
-
-        print(dataset[1].shape)
 
         train = torch.utils.data.TensorDataset(torch.from_numpy(dataset[1]).float(), torch.from_numpy(dataset[3]).float())
         train_loader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
@@ -107,10 +105,15 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
 
             torch.save(model.state_dict(), MODEL_PATH)  #モデルの保存
             if i%50 == 0:   #ミニバッチ50個ごとにモデルが最善か確認
-                pass
-                #実際にランダムさんと戦わせて、勝率を見る
-                #勝率が今までよりも高ければ、そのモデルを別途保存
-        
+                ratio = evaluate.evaluate_model(model, 10)  #勝率
+                print("win ratio:{}".format(ratio))
+                if max_win_ratio <= ratio:  #勝率が今までの最高値より高い
+                    print("max update:{0} >= {1}".format(ratio, max_win_ratio))
+                    max_win_ratio = ratio
+                    torch.save(model.state_dict(), BEST_MODEL_PATH)  #ベストモデルの保存
+                else:
+                    print("{0} <= {1}".format(ratio, max_win_ratio))
+
         record_index += BATCH_SIZE
 
     torch.save(optimizer.state_dict(), OPTIMIZER_PATH)  #オプティマイザの保存
