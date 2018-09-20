@@ -15,6 +15,7 @@ import game
 import evaluate
 
 GAMMA = 0.97    #割引率
+LR = 0.01   #学習率(learning rate)
 BATCH_SIZE = 32 #一度に学習する局面数
 EPOCH = 3 #1つの訓練データを何回学習させるか
 TURN = 32
@@ -37,11 +38,11 @@ else:
 #オプティマイザが保存されていれば読み込み、なければ新規作成
 if os.path.exists(OPTIMIZER_PATH):
     fine_tune = True
-    optimizer = optim.Adam(model.parameters(), lr=0.1)
+    optimizer = optim.Adam(model.parameters(), lr=LR)
     optimizer.load_state_dict(torch.load(OPTIMIZER_PATH))
 else:
     fine_tune = False
-    optimizer = optim.Adam(model.parameters(), lr=0.1)
+    optimizer = optim.Adam(model.parameters(), lr=LR)
 
 criterion = nn.MSELoss()   #推論値と理論値の差を計算
 
@@ -105,7 +106,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
             print(loss)
 
             torch.save(model.state_dict(), MODEL_PATH)  #モデルの保存
-            if i%50 == 0:   #ミニバッチ50個ごとにモデルが最善か確認
+            if (record_index+i)%50 == 0:   #学習50回ごとにモデルが最善か確認
                 ratio = evaluate.evaluate_model(model, 10)  #勝率
                 print("win ratio:{}".format(ratio))
                 if max_win_ratio <= ratio:  #勝率が今までの最高値より高い
