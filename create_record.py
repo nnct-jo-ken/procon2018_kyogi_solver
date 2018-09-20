@@ -10,6 +10,7 @@ DEBUG = False    #デバッグ時はTrue
 RECORD_NUM = 1000  #対局データ作成数
 TURN = 60   #1試合あたりのターン数
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "record")  #出力ディレクトリ
+os.makedirs(OUTPUT_DIR, exist_ok=True)  #出力ディレクトリの作成
 
 players = {
     game.OWN_1: player.RandomUniform(),

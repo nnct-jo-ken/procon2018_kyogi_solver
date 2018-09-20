@@ -26,6 +26,8 @@ OPTIMIZER_PATH = os.path.join(os.path.dirname(__file__), "./output/optimizer.pth
 RECORD_LIST_PATH = os.path.join(os.path.dirname(__file__), "./recordlist_train")         #対局データ一覧表（学習用）の保存パス
 TEST_RECORD_LIST_PATH = os.path.join(os.path.dirname(__file__), "./recordlist_test") #対局データ一覧表（テスト用）の保存パス
 
+os.makedirs('output', exist_ok=True)  #モデルなどの出力ディレクトリ作成
+
 #モデルが保存されていれば読み込み、なければ新規作成
 if os.path.exists(MODEL_PATH):
     fine_tune = True
