@@ -30,12 +30,16 @@ class DQNPlayer(player.Player):
             field.conv_turn_pos(player)['y'] = y
             field.state = state
 
+        value_pad = np.pad(field.value, [(0, game.MAX_BOARD_SIZE - field.value.shape[0]),(0, game.MAX_BOARD_SIZE - field.value.shape[1])], 'constant')  #大きさをフィールドの最大値に固定
+        value_pad = torch.from_numpy(value_pad) #Tensorに変換
+        value_pad = value_pad.reshape(1, 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE).float()   #モデルの入力に合わせる
+
         for state in states:    #移動可能な位置に移動した状態について、評価値を推論
             #大きさをフィールドの最大値に固定
             state_pad = np.pad(state, [(0, game.MAX_BOARD_SIZE - state.shape[0]),(0, game.MAX_BOARD_SIZE - state.shape[1])], 'constant')
             state_pad = torch.from_numpy(state_pad) #Tensorに変換
             state_pad = state_pad.reshape(1, 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE).float()   #モデルの入力に合わせる
-            eva_val.append(self.model(state_pad))
+            eva_val.append(self.model(value_pad, state_pad))
 
         max_eva_val_index = eva_val.index(max(eva_val)) #評価値のリストのうち、最初に表れた最大値のインデックス
 

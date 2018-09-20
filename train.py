@@ -72,25 +72,26 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         # train_torch = torch.from_numpy(train_np).float()
         # target_torch = torch.from_numpy(target_np).long()
 
+        dataset[0] = dataset[0].reshape(len(dataset[0]), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)
         dataset[1] = dataset[1].reshape(len(dataset[1]), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)
         dataset[3] = dataset[3].reshape(len(dataset[3]), 1, 1, 1)
 
-        train = torch.utils.data.TensorDataset(torch.from_numpy(dataset[1]).float(), torch.from_numpy(dataset[3]).float())
+        train = torch.utils.data.TensorDataset(torch.from_numpy(dataset[0]).float(), torch.from_numpy(dataset[1]).float(), torch.from_numpy(dataset[3]).float())
         train_loader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
 
         total_loss = 0
         for i, data in enumerate(train_loader):
-            x, t = data
-            x, t = torch.autograd.Variable(x), torch.autograd.Variable(t)
+            x, y, t = data
+            x, y, t = torch.autograd.Variable(x), torch.autograd.Variable(y), torch.autograd.Variable(t)
             optimizer.zero_grad()
-            y = model(x)
+            z = model(x, y)
             t = t.reshape((32, 1))  #入力にラベルのデータの大きさを合わせる
 
             # print(x.shape)
             # print(y.shape)
             # print(t.shape)
 
-            loss = criterion(y, t)
+            loss = criterion(z, t)
             total_loss += loss.item()
             loss.backward()
             optimizer.step()

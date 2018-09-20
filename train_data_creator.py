@@ -63,6 +63,7 @@ def get_dataset(record_list_path, batch_size, record_index):
         value, status, players, won = get_val
 
         #大きさをフィールドの最大値に固定
+        value_pad = np.pad(value, [(0, game.MAX_BOARD_SIZE - value.shape[0]),(0, game.MAX_BOARD_SIZE - value.shape[1])], 'constant')
         status_pad = np.pad(status, [(0,0),(0, game.MAX_BOARD_SIZE - value.shape[0]),(0, game.MAX_BOARD_SIZE - value.shape[1])], 'constant')
 
         # 1対局で得られたデータをリストに固め、それをdatasetに追加していく
@@ -77,7 +78,7 @@ def get_dataset(record_list_path, batch_size, record_index):
 
         # player_list.append(0)  ##playersとstatusの長さを合わせる 先頭に0を追加
         for state, player in zip(status_pad, players):
-            value_list.append(value)
+            value_list.append(value_pad)
             state_list.append(state)
             player_list.append(player)
             won_list.append(won)

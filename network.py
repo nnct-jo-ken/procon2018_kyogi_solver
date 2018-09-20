@@ -20,7 +20,7 @@ class Network(nn.Module):
         self.pool2 = nn.MaxPool2d(kernel_size=[2, 2], stride=1, padding=1)
         self.conv3 = nn.Conv2d(in_channels=ch, out_channels=ch, kernel_size=(4, 4), stride=1, padding=1)
         self.pool3 = nn.MaxPool2d(kernel_size=[2, 2], stride=1, padding=1)
-        self.fc1 = nn.Linear(ch * 12 * 12, 100)
+        self.fc1 = nn.Linear(ch * 12 * 12 * 2, 100)
         self.fc2 = nn.Linear(100, 100)
         self.fc3 = nn.Linear(100, 1)     #出力は、勝ち負けの値1コ
 
@@ -28,27 +28,23 @@ class Network(nn.Module):
         # self.fc2 = nn.Linear(10, 10)
         # self.fc3 = nn.Linear(10, 1)     #出力は勝ち負けを表す値1コ
 
-    def forward(self, x):
-        # print(x.shape)
-        a = self.conv1(x)
-        b = F.relu(a)
-        x = self.pool1(b)
-        # print(x.shape)
-        # x = self.pool1(F.relu(self.conv1(x)))
+    def forward(self, x, y):
+        x = self.pool1(F.relu(self.conv1(x)))
         x = self.pool2(F.relu(self.conv2(x)))
-        # print(x.shape)
-        # x = self.pool3(F.relu(self.conv3(x)))
         x = self.pool3(F.relu(self.conv3(x)))
-        # print(x.shape)
+
+        y = self.pool1(F.relu(self.conv1(y)))
+        y = self.pool2(F.relu(self.conv2(y)))
+        y = self.pool3(F.relu(self.conv3(y)))
+
         x = x.view(-1, ch * 12 * 12)
-        # print(x.shape)
-        x = F.relu(self.fc1(x))
-        # print(x.shape)
-        x = F.relu(self.fc2(x))
-        # print(x.shape)
-        x = self.fc3(x)
-        # print(x.shape)
-        return x
+        y = y.view(-1, ch * 12 * 12)  
+        merge_layer = torch.cat([x, y], dim=1)  #水平方向にくっつけている
+
+        out = F.relu(self.fc1(merge_layer))
+        out = F.relu(self.fc2(out))
+        out = self.fc3(out)
+        return out
 
         # h1 = F.relu(self.fc1(x)) #中間層の活性化関数はReLU
         # h2 = F.relu(self.fc2(h1))
