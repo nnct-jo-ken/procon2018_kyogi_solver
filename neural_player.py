@@ -9,6 +9,8 @@ class DQNPlayer(player.Player):
     def __init__(self, model):
         super().__init__()  #親クラスのコンストラクタ
         self.model = model  #評価値生成に用いるモデルを設定
+        if torch.cuda.is_available(): #GPUが使える場合は、モデルをGPUに転送
+            self.model.cuda()
 
     def select(self, field, player):
         states = [] #playerが移動可能な位置に移動した状態をリストに突っ込む
@@ -39,8 +41,12 @@ class DQNPlayer(player.Player):
             state_pad = np.pad(state, [(0, game.MAX_BOARD_SIZE - state.shape[0]),(0, game.MAX_BOARD_SIZE - state.shape[1])], 'constant')
             state_pad = torch.from_numpy(state_pad) #Tensorに変換
             state_pad = state_pad.reshape(1, 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE).float()   #モデルの入力に合わせる
-            value_pad = torch.autograd.Variable(value_pad)
-            state_pad = torch.autograd.Variable(state_pad)
+            if torch.cuda.is_available(): #GPUを使えるとき
+                value_pad = torch.autograd.Variable(value_pad.cuda())
+                state_pad = torch.autograd.Variable(state_pad.cuda())
+            else:
+                value_pad = torch.autograd.Variable(value_pad)
+                state_pad = torch.autograd.Variable(state_pad)
             eva_val.append(self.model(value_pad, state_pad))
 
         max_eva_val_index = eva_val.index(max(eva_val)) #評価値のリストのうち、最初に表れた最大値のインデックス

@@ -37,7 +37,7 @@ else:
     fine_tune = False
     model = network.Network()
 
-if torch.cuda.is_available: #GPUが使える場合は、モデルをGPUに転送
+if torch.cuda.is_available(): #GPUが使える場合は、モデルをGPUに転送
     model.cuda()
 
 #オプティマイザが保存されていれば読み込み、なければ新規作成
@@ -89,7 +89,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         for i, data in enumerate(train_loader):
             model.train()   #訓練モード
             x, y, t = data
-            if torch.cuda.is_available: #GPUを使える時
+            if torch.cuda.is_available(): #GPUを使える時
                 x, y, t = torch.autograd.Variable(x.cuda()), torch.autograd.Variable(y.cuda()), torch.autograd.Variable(t.cuda())
             else:
                 x, y, t = torch.autograd.Variable(x), torch.autograd.Variable(y), torch.autograd.Variable(t)
