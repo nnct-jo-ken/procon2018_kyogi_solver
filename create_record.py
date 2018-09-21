@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os, time
+import copy
 import numpy as np
 import game
 import player
@@ -72,7 +73,7 @@ for i in range(1, RECORD_NUM+1):
             if hand is not None:    #次の手があれば
                 field.status.append(field.state)
                 field.players.append(turn)
-                field.state = field.move(field.state, turn, hand)
+                field.state = copy.deepcopy(field.move(field.state, turn, hand))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
 
     won = field.judge(field.state)      #勝者
     field.status.append(field.state)    #終了時の盤面の保存
