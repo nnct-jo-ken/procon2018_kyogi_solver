@@ -19,7 +19,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket1:
         value = socket1.recv(512)
         socket1.send(b'end')
         state = socket1.recv(512)
-        socket1.send(b'end')
 
         value_lines = value.split(b':')
         for value_line in value_lines:
