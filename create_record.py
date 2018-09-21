@@ -83,3 +83,5 @@ for i in range(1, RECORD_NUM+1):
         print()
         print(field.status)
         print("len: {}", len(field.status))
+
+print("created {} records".format(RECORD_NUM))
