@@ -37,6 +37,9 @@ else:
     fine_tune = False
     model = network.Network()
 
+if torch.cuda.is_available: #GPUが使える場合は、モデルをGPUに転送
+    model.cuda()
+
 #オプティマイザが保存されていれば読み込み、なければ新規作成
 if os.path.exists(OPTIMIZER_PATH):
     fine_tune = True
@@ -84,8 +87,12 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
 
         total_loss = 0
         for i, data in enumerate(train_loader):
+            model.train()   #訓練モード
             x, y, t = data
-            x, y, t = torch.autograd.Variable(x), torch.autograd.Variable(y), torch.autograd.Variable(t)
+            if torch.cuda.is_available: #GPUを使える時
+                x, y, t = torch.autograd.Variable(x.cuda()), torch.autograd.Variable(y.cuda()), torch.autograd.Variable(t.cuda())
+            else:
+                x, y, t = torch.autograd.Variable(x), torch.autograd.Variable(y), torch.autograd.Variable(t)
             optimizer.zero_grad()
             z = model(x, y)
             t = t.reshape((32, 1))  #入力にラベルのデータの大きさを合わせる
@@ -108,6 +115,8 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
             print(loss)
 
             torch.save(model.state_dict(), MODEL_PATH)  #モデルの保存
+
+            model.eval()    #評価モード
             if (record_index+i)%50 == 0:   #学習50回ごとにモデルが最善か確認
                 ratio = evaluate.evaluate_model(model, 10)  #勝率
                 print("win ratio:{}".format(ratio))
