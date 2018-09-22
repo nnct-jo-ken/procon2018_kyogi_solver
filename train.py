@@ -32,7 +32,7 @@ os.makedirs('output', exist_ok=True)  #モデルなどの出力ディレクト�
 if os.path.exists(MODEL_PATH):
     fine_tune = True
     model = network.Network()
-    model.load_state_dict(torch.load(MODEL_PATH))
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=lambda storage, loc: storage))
 else:
     fine_tune = False
     model = network.Network()

@@ -18,7 +18,7 @@ def solve(field):
     MODEL_PATH = './output/best_model.pth'
     if os.path.exists(MODEL_PATH):
         model = network.Network()
-        model.load_state_dict(torch.load(MODEL_PATH))
+        model.load_state_dict(torch.load(MODEL_PATH, map_location=lambda storage, loc: storage))
 
     player = neural_player.DQNPlayer(model)   # ***後で、きちんと書く！***
     own_a1_hand = player.select(field, game.OWN_1)
