@@ -169,11 +169,14 @@ class field:
                 elif self.state[x + i][y + j] == EMPTY:  #どちらの陣でもない
                     hands.append([{'x':x+i, 'y':y+j}, False])    #移動
                 else:   #どちらかの陣地
-                    if i != 0 or j != 0:    #自分がいる場所以外
+                    if i == 0 and j == 0:   #自分のいる場所
+                        hands.append([{'x':x+i, 'y':y+j} , False]) #移動
+                    else:   #隣り合った場所
                         if self.player_exist(field.state, [x + i, y + j]) is True:  #他のプレーヤーがいる
                             continue
-                        hands.append([{'x':x+i, 'y':y+j} , True])  #ひっくり返すだけ 自分のいる位置をひっくり返すとプレーヤーの存在位置がなくなるから、自分がいる場所以外のときだけひっくり返す
-                    hands.append([{'x':x+i, 'y':y+j} , False]) #移動
+                        else:   #プレーヤーがいない
+                            hands.append([{'x':x+i, 'y':y+j} , False]) #移動
+                            hands.append([{'x':x+i, 'y':y+j} , True]) #ひっくり返す
         
         if DEBUG is True:
             print("player:{0} hands:{1}".format(player, hands))
