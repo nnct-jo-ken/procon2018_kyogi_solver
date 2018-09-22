@@ -130,10 +130,16 @@ class field:
         print("state\n{0}".format(self.state))
 
     def can_move_pos(self, pos):    #その座標は操作可能か（範囲内か） posはリスト [x, y]
-        if pos[0] < 0 or pos[0] >= self.width or pos[1] < 0 or pos[1] >= self.height:
+        if pos[0] < 0 or pos[0] >= self.width or pos[1] < 0 or pos[1] >= self.height:   #範囲外
             return False
         else:
             return True
+
+    def player_exist(self, state, pos): #その座標にプレーヤがいるか posはリスト [x, y]
+        if state[pos[0]][pos[1]] == OWN_1 or state[pos[0]][pos[1]] == OWN_2 or state[pos[0]][pos[1]] == OPPONENT_1 or state[pos[0]][pos[1]] == OPPONENT_2:   #他のプレーヤーがいる
+            return True
+        else:
+            return False
 
     def can_move(self, **player):    #エージェントが移動可能か否か
         if player is None:
@@ -163,9 +169,11 @@ class field:
                 elif self.state[x + i][y + j] == EMPTY:  #どちらの陣でもない
                     hands.append([{'x':x+i, 'y':y+j}, False])    #移動
                 else:   #どちらかの陣地
+                    if i != 0 or j != 0:    #自分がいる場所以外
+                        if self.player_exist(field.state, [x + i, y + j]) is True:  #他のプレーヤーがいる
+                            continue
+                        hands.append([{'x':x+i, 'y':y+j} , True])  #ひっくり返すだけ 自分のいる位置をひっくり返すとプレーヤーの存在位置がなくなるから、自分がいる場所以外のときだけひっくり返す
                     hands.append([{'x':x+i, 'y':y+j} , False]) #移動
-                    if i != 0 or j != 0:    #その場をひっくり返すとエージェントの居場所がなくなる
-                        hands.append([{'x':x+i, 'y':y+j} , True])  #ひっくり返すだけ
         
         if DEBUG is True:
             print("player:{0} hands:{1}".format(player, hands))
@@ -179,7 +187,7 @@ class field:
         elif turn == OPPONENT_2: return self.opponent_a2
 
     def move(self, state, player, hand):   #handはリスト hand[0]は辞書
-        if self.can_move_pos([hand[0]['x'], hand[0]['y']]) is False: #移動可能か確認
+        if self.can_move_pos([hand[0]['x'], hand[0]['y']]) is False: #範囲内か確認
             raise Exception("Can't move!")
         if hand[1] is False:    #移動なら
             #移動元はチームの値を置く　始
