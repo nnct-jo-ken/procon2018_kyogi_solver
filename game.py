@@ -207,65 +207,6 @@ class field:
 
         return state
 
-    def inclose_check(self, state, player_state, team, pos):   #state:self.state player_state:例えばown_state pos:[x,y]リスト
-        #すでに判定済みなら、そのまま値を返す state_checkでも確認しているが、一応
-        if player_state[pos[0]][pos[1]] != 0: return player_state[pos[0]][pos[1]]
-        #端にいる時点で囲えない
-        if pos[0] < 1 or pos[0] > field.width-2 or pos[1] < 1 or pos[1] > field.height-2:
-            return 0
-
-        x = pos[0]
-        y = pos[1]
-        another_team = -team  #teamの敵チーム
-        another_num = [another_team, another_team//3, another_team//3*2]    #敵チームを表すstate上の数字
-
-        player_state[x][y] = 1
-
-        #上下左右が囲まれたマスか確認
-        if field.state[x-1][y] == 0 or field.state[x-1][y] in another_num:  #空 or 敵チームのタイル
-            val = self.inclose_check(self.state, player_state, team, [x-1, y])
-            if val == 0: return 0, None
-        if field.state[x-1][y] == 0 or field.state[x+1][y] in another_num:  #空 or 敵チームのタイル
-            val = self.inclose_check(self.state, player_state, team, [x+1, y])
-            if val == 0: return 0, None
-        if field.state[x-1][y] == 0 or field.state[x][y-1] in another_num:  #空 or 敵チームのタイル
-            val = self.inclose_check(self.state, player_state, team, [x, y-1])
-            if val == 0: return 0, None
-        if field.state[x-1][y] == 0 or field.state[x][y+1] in another_num:  #空 or 敵チームのタイル
-            val = self.inclose_check(self.state, player_state, team, [x, y+1])
-            if val == 0: return 0, None
-
-        if DEBUG is True:   #デバッグ時のみ表示
-            print(player_state)
-
-        return 1, player_state  #囲まれていた場合は、使い回せるようにそのときのフィールドの状態も返す
-
-    def state_check(self, state):   #タイルが置いてある場所と囲まれている場所を表す
-        #状態を表すための配列
-        own_state = np.zeros([self.width, self.height], dtype=int)  #自チーム
-        opponent_state = np.zeros([self.width, self.height], dtype=int) #敵チーム
-
-        #囲まれているか確認するための配列
-        own_state_copy = copy.deepcopy(own_state)
-        opponent_state_copy = copy.deepcopy(opponent_state)
-
-        #タイルが置かれてたら 1
-        #囲まれていたら 2
-        #得点に関係なければ 0
-
-        team = OWN
-
-        for i in range(0, self.width):
-            for j in range(0, self.height):
-                if opponent_state[i][j] != 0:   continue    #すでに判定済み
-                
-                if self.state[i][j] > 0: own_state[i][j] = 1    #自チームのタイルが置かれている
-                elif self.state[i][j] == EMPTY:   #囲まれているか判定
-                    num, own_state_copy = self.inclose_check(self.state, own_state_copy, team, [i, j])
-
-                    inclose_index = np.where(own_state_copy == 1)   #囲まれているフラグの立つ配列の要素を取得
-                    
-
     def area_score(self, state, team):
         score = 0   #領域ポイント
         # height個の要素のリストがwidth個入ったリストができる
