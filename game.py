@@ -266,6 +266,62 @@ class field:
                     inclose_index = np.where(own_state_copy == 1)   #囲まれているフラグの立つ配列の要素を取得
                     
 
+    def area_score(self, state, team):
+        score = 0   #領域ポイント
+        # height個の要素のリストがwidth個入ったリストができる
+        is_searched = [[False for i in range(self.height)] for j in range(self.width)]  #探索済みか
+        is_end = [[False for i in range(self.height)] for j in range(self.width)]   #端か
+
+        my_team = [team, team//3, team//3*2]    #自チームを表すstate上の数字
+
+        #端の部分はTrueを代入
+        for x in range(self.width):
+            for y in range(self.height):
+                if x == 0 or y == 0 or x == self.width-1 or y == self.height-1:
+                    is_end[x][y] = True
+
+        for x in range(self.width):
+            for y in range(self.height):
+                if state[x][y] not in my_team:    #自チームではない
+                    if is_searched[x][y] is False:  #未探索
+                        _reach_end = False  #まだ探索が終了していない
+                        sscore = 0
+                        sscore, _reach_end = self.count_area_score(state, [x, y], is_searched, is_end, _reach_end, sscore, my_team)
+                        if _reach_end is False:
+                            score += sscore
+
+        return score
+
+    def count_area_score(self, state, pos, is_searched, is_end, _reach_end, sscore, teams): #posは[x, y] teamsはリスト[team, team_a1, team_a2]
+        x = pos[0]
+        y = pos[1]
+
+        if state[x][y] in teams or is_searched[x][y] == True: #自陣 or すでに探索済み
+            return sscore, _reach_end
+        is_searched[x][y] = True    #探索済みにする
+        sscore += abs(self.value[x][y])   #タイルポイントの絶対値を代入
+        if is_end[x][y] is True:    #端まで達したら、探索終了
+            _reach_end = True
+
+        if x > 0:
+            s, r = self.count_area_score(state, [x-1,y], is_searched, is_end, _reach_end, sscore, teams)
+            sscore = s
+            _reach_end = r
+        if x < self.width-1:
+            s,r = self.count_area_score(state, [x+1,y], is_searched, is_end, _reach_end, sscore, teams)
+            sscore = s
+            _reach_end = r
+        if y > 0:
+            s, r = self.count_area_score(state, [x,y-1], is_searched, is_end, _reach_end, sscore, teams)
+            sscore = s
+            _reach_end = r
+        if y < self.height-1:
+            s, r = self.count_area_score(state, [x,y+1], is_searched, is_end, _reach_end, sscore, teams)
+            sscore = s
+            _reach_end = r
+
+        return sscore, _reach_end
+
     def judge(self, state):
         own_tile, own_territory = 0, 0
         opponent_tile, opponent_territory = 0, 0
@@ -274,9 +330,10 @@ class field:
             for j in range(0, self.height):
                 if self.state[i][j] > 0: own_tile += self.value[i][j]    #OWN_1とかが1以上だから
                 if self.state[i][j] < 0: opponent_tile += self.value[i][j]   #OPPONEN_1とかが-1以下だから
-                if self.state[i][j] == EMPTY:   #囲まれているか判定
-                    pass
-            
+
+        own_territory = self.area_score(state, OWN)
+        opponent_territory = self.area_score(state, OPPONENT)
+
         if own_tile + own_territory > opponent_tile + opponent_territory:
             return OWN
         else:
