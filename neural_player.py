@@ -21,8 +21,6 @@ class DQNPlayer(player.Player):
         if len(hands) == 0: #手がない
             return None
 
-        print(hands)
-
         for hand in hands:  #着手可能な手を網羅
             # 実際に移動させたくないから、移動前の状態を記憶する
             x = field.conv_turn_pos(player)['x']
