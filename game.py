@@ -100,6 +100,8 @@ class field:
         self.state[self.own_a2['x']][self.own_a2['y']] = OWN_2
 
     def create_from_gui(self, value_nums, state_nums):
+        self.clear()    #データをリセット
+
         self.width = int(value_nums[0][0].decode('ascii'))
         self.height = int(value_nums[0][1].decode('ascii'))
 
@@ -138,7 +140,13 @@ class field:
             return True
 
     def player_exist(self, state, pos): #その座標にプレーヤがいるか posはリスト [x, y]
-        if state[pos[0]][pos[1]] == OWN_1 or state[pos[0]][pos[1]] == OWN_2 or state[pos[0]][pos[1]] == OPPONENT_1 or state[pos[0]][pos[1]] == OPPONENT_2:   #他のプレーヤーがいる
+        x = pos[0]
+        y = pos[1]
+
+        if (x == self.own_a1['x'] and y == self.own_a1['y']) \
+            or (x == self.own_a2['x'] and y == self.own_a2['y']) \
+            or (x == self.opponent_a1['x'] and y == self.opponent_a1['y']) \
+            or (x == self.opponent_a2['x'] and y == self.opponent_a2['y']):
             return True
         else:
             return False

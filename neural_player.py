@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import copy
 import numpy as np
 import torch
 import game
@@ -20,17 +21,19 @@ class DQNPlayer(player.Player):
         if len(hands) == 0: #手がない
             return None
 
+        print(hands)
+
         for hand in hands:  #着手可能な手を網羅
             # 実際に移動させたくないから、移動前の状態を記憶する
             x = field.conv_turn_pos(player)['x']
             y = field.conv_turn_pos(player)['y']
-            state = field.state
+            state = copy.deepcopy(field.state)
 
             states.append(field.move(field.state, player, hand))
 
             field.conv_turn_pos(player)['x'] = x
             field.conv_turn_pos(player)['y'] = y
-            field.state = state
+            field.state = copy.deepcopy(state)
 
         value_pad = np.pad(field.value, [(0, game.MAX_BOARD_SIZE - field.value.shape[0]),(0, game.MAX_BOARD_SIZE - field.value.shape[1])], 'constant')  #大きさをフィールドの最大値に固定
         value_pad = torch.from_numpy(value_pad) #Tensorに変換
