@@ -106,19 +106,18 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
             loss.backward()
             optimizer.step()
 
-            # if i % 1000 == 999:    #ミニバッチ1000個ごとにロスの表示
-            #     print('[%d, %5d] loss: %.3f' %
-            #         (epoch + 1, i + 1, total_loss / 1000))
-            #     total_loss = 0.0
+            if (record_index+i) % 10 == 0:    #学習10回ごとにロスの平均を表示
+                print("[{0} {1}] loss: {2}".format(epoch, i + 1, total_loss / 10))
+                total_loss = 0.0
             
             # print("x:{0} t:{1} y:{2} loss:{3}".format(x, t, y, loss))
-            print(loss)
 
             torch.save(model.state_dict(), MODEL_PATH)  #モデルの保存
 
             model.eval()    #評価モード
             if (record_index+i)%50 == 0:   #学習50回ごとにモデルが最善か確認
                 ratio = evaluate.evaluate_model(model, 10)  #勝率
+                print("played {} games".format(10))
                 print("win ratio:{}".format(ratio))
                 if max_win_ratio <= ratio:  #勝率が今までの最高値より高い
                     print("max update:{0} >= {1}".format(ratio, max_win_ratio))
