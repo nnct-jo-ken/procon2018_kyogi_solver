@@ -96,6 +96,8 @@ class field:
     def create_from_file(self, path):
         self.width, self.height, self.value, self.own_a1, self.own_a2 = load_field_file.load_field_file(path)
         self.state = np.resize(self.state, (self.width, self.height))
+        self.state[self.own_a1['x']][self.own_a1['y']] = OWN_1
+        self.state[self.own_a2['x']][self.own_a2['y']] = OWN_2
 
     def create_from_gui(self, value_nums, state_nums):
         self.width = int(value_nums[0][0].decode('ascii'))
