@@ -75,7 +75,11 @@ for i in range(1, RECORD_NUM+1):
                 field.players.append(turn)
                 field.state = copy.deepcopy(field.move(field.state, turn, hand))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
 
-    won = field.judge(field.state)      #勝者
+    w = field.judge(field.state)      #勝者
+    if w == game.OWN:   #勝ち1 負け0に対応させる
+        won = 1
+    elif w == game.OPPONENT:
+        won = 0
     field.status.append(field.state)    #終了時の盤面の保存
 
     save_record(field, won)  #対局データの保存
