@@ -107,7 +107,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
             optimizer.step()
 
             if (record_index+i) % 10 == 0:    #学習10回ごとにロスの平均を表示
-                print("[{0} {1}] loss: {2}".format(epoch, i + 1, total_loss / 10))
+                print("[epoch:{0} minibatch:{1} total aspect:{2}] loss: {3}".format(epoch, record_index/BATCH_SIZE+1, record_index+i, total_loss / 10))
                 total_loss = 0.0
             
             # print("x:{0} t:{1} y:{2} loss:{3}".format(x, t, y, loss))
