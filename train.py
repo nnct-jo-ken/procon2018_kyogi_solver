@@ -52,7 +52,6 @@ else:
 criterion = nn.MSELoss()   #推論値と理論値の差を計算
 
 max_win_ratio = -1.0    #勝率の最高値
-correct = 0 #推論値と実際の勝敗があっていた数
 
 for epoch in range(1, EPOCH+1):   #エポックを回す
     print("epoch:", epoch)          #現在のエポック数（何回目のループか）
@@ -107,17 +106,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
             loss.backward()
             optimizer.step()
 
-            ''' 推論値と実際の勝敗を比較 '''
-            diff = abs(t - z)   #（正解ラベル - 推論値）の絶対値
-            if diff < 0.5:  #誤差が5割以内（どちらが優勢か判断ができている）なら、
-                correct += 1
-
-            if (record_index+i) % 10 == 0:    #学習10回ごとに
-                ''' 正解率を表示 '''
-                print("correct:{}/10".format(correct))
-                correct = 0
-
-                ''' ロスの平均を表示 '''
+            if (record_index+i) % 10 == 0:    #学習10回ごとにロスの平均を表示
                 print("[epoch:{0} minibatch:{1} aspect:{2}] loss: {3}".format(epoch, record_index//BATCH_SIZE+1, i, total_loss / 10))    #最初に表示されるlossは、本来の1/10
                 total_loss = 0.0
             
@@ -127,7 +116,6 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
 
             model.eval()    #評価モード
             if (record_index+i)%50 == 0:   #学習50回ごとにモデルが最善か確認
-                ''' 実際に試合をして、勝率を求める '''
                 ratio = evaluate.evaluate_model(model, 10)  #勝率
                 print("played {} games".format(10))
                 print("win ratio:{}".format(ratio))
