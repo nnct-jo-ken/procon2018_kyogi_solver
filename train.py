@@ -78,30 +78,31 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         # train_torch = torch.from_numpy(train_np).float()
         # target_torch = torch.from_numpy(target_np).long()
 
-        dataset[0] = dataset[0].reshape(len(dataset[0]), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)
-        dataset[1] = dataset[1].reshape(len(dataset[1]), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)
-        dataset[3] = dataset[3].reshape(len(dataset[3]), 1, 1, 1)
+        dataset[0] = dataset[0].reshape(len(dataset[0]), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #value
+        dataset[1] = dataset[1].reshape(len(dataset[1]), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #state
+        dataset[2] = dataset[2].reshape(len(dataset[2]), 1, 1, 1)   #agent
+        dataset[3] = dataset[3].reshape(len(dataset[3]), 1, 1, 1)   #won
 
-        train = torch.utils.data.TensorDataset(torch.from_numpy(dataset[0]).float(), torch.from_numpy(dataset[1]).float(), torch.from_numpy(dataset[3]).float())
+        train = torch.utils.data.TensorDataset(torch.from_numpy(dataset[0]).float(), torch.from_numpy(dataset[1]).float(), torch.from_numpy(dataset[2]).float(), torch.from_numpy(dataset[3]).float())
         train_loader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
 
         total_loss = 0
         for i, data in enumerate(train_loader):
             model.train()   #訓練モード
-            x, y, t = data
+            x, y, z, t = data
             if torch.cuda.is_available(): #GPUを使える時
-                x, y, t = torch.autograd.Variable(x.cuda()), torch.autograd.Variable(y.cuda()), torch.autograd.Variable(t.cuda())
+                x, y, z, t = torch.autograd.Variable(x.cuda()), torch.autograd.Variable(y.cuda()), torch.autograd.Variable(z.cuda()),torch.autograd.Variable(t.cuda())
             else:
-                x, y, t = torch.autograd.Variable(x), torch.autograd.Variable(y), torch.autograd.Variable(t)
+                x, y, z, t = torch.autograd.Variable(x), torch.autograd.Variable(y), torch.autograd.Variable(z), torch.autograd.Variable(t)
             optimizer.zero_grad()
-            z = model(x, y)
+            out = model(x, y, z)
             t = t.reshape((32, 1))  #入力にラベルのデータの大きさを合わせる
 
             # print(x.shape)
             # print(y.shape)
             # print(t.shape)
 
-            loss = criterion(z, t)
+            loss = criterion(out, t)
             total_loss += loss.item()
             loss.backward()
             optimizer.step()
