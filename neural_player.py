@@ -37,8 +37,6 @@ class DQNPlayer(player.Player):
         value_pad = torch.from_numpy(value_pad) #Tensorに変換
         value_pad = value_pad.reshape(1, 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE).float()   #モデルの入力に合わせる
 
-        player = torch.Tensor([player])
-
         for state in states:    #移動可能な位置に移動した状態について、評価値を推論
             #大きさをフィールドの最大値に固定
             state_pad = np.pad(state, [(0, game.MAX_BOARD_SIZE - state.shape[0]),(0, game.MAX_BOARD_SIZE - state.shape[1])], 'constant')
@@ -47,9 +45,11 @@ class DQNPlayer(player.Player):
             if torch.cuda.is_available(): #GPUを使えるとき
                 value_pad = torch.autograd.Variable(value_pad.cuda())
                 state_pad = torch.autograd.Variable(state_pad.cuda())
+                player = torch.Tensor([player]).cuda()
             else:
                 value_pad = torch.autograd.Variable(value_pad)
                 state_pad = torch.autograd.Variable(state_pad)
+                player = torch.Tensor([player])
             eva_val.append(self.model(value_pad, state_pad, player))
 
         max_eva_val_index = eva_val.index(max(eva_val)) #評価値のリストのうち、最初に表れた最大値のインデックス
