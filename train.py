@@ -15,9 +15,9 @@ import game
 import evaluate
 
 GAMMA = 0.97    #割引率
-LR = 0.01   #学習率(learning rate)
+LR = 0.001   #学習率(learning rate)
 BATCH_SIZE = 32 #一度に学習する局面数
-EPOCH = 3 #1つの訓練データを何回学習させるか
+EPOCH = 50 #1つの訓練データを何回学習させるか
 TURN = 32
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "./output/model.pth")       #モデルの保存パス
