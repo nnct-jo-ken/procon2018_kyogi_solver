@@ -6,18 +6,24 @@ import numpy as np
 import game
 import player
 
-DEBUG = False    #デバッグ時はTrue
+DEBUG = True    #デバッグ時はTrue
 
 RECORD_NUM = 1000  #対局データ作成数
 TURN = 60   #1試合あたりのターン数
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "record")  #出力ディレクトリ
 os.makedirs(OUTPUT_DIR, exist_ok=True)  #出力ディレクトリの作成
 
+# players = {
+#     game.OWN_1: player.RandomUniform(),
+#     game.OWN_2: player.RandomUniform(),
+#     game.OPPONENT_1: player.RandomUniform(),
+#     game.OPPONENT_2: player.RandomUniform()
+# }
 players = {
-    game.OWN_1: player.RandomUniform(),
-    game.OWN_2: player.RandomUniform(),
-    game.OPPONENT_1: player.RandomUniform(),
-    game.OPPONENT_2: player.RandomUniform()
+    game.OWN_1: player.RandomMTS(100, -1),
+    game.OWN_2: player.RandomMTS(100, -1),
+    game.OPPONENT_1: player.RandomMTS(100, -1),
+    game.OPPONENT_2: player.RandomMTS(100, -1)
 }
 
 def save_record(field, won):
