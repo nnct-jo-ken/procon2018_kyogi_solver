@@ -20,10 +20,10 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)  #出力ディレクトリの作成
 #     game.OPPONENT_2: player.RandomUniform()
 # }
 players = {
-    game.OWN_1: player.RandomMTS(100, -1),
-    game.OWN_2: player.RandomMTS(100, -1),
-    game.OPPONENT_1: player.RandomMTS(100, -1),
-    game.OPPONENT_2: player.RandomMTS(100, -1)
+    game.OWN_1: player.RandomMTS(100, 5),
+    game.OWN_2: player.RandomMTS(100, 5),
+    game.OPPONENT_1: player.RandomMTS(100, 5),
+    game.OPPONENT_2: player.RandomMTS(100, 5)
 }
 
 def save_record(field, won):

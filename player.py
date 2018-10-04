@@ -6,6 +6,8 @@ import copy
 import numpy as np
 import game
 
+DEBUG = True
+
 TURN = 30   #探索するターン数 途中からだから、減らしている
 
 class Player:
@@ -39,10 +41,6 @@ players = {
 
 #dictで管理しているせいで次のプレーヤーを簡単に指定できないから、専用のdictを用意する
 next_players = {
-    # game.OWN_1: players[game.OWN_2],    #ONW_2
-    # game.OWN_2: players[game.OPPONENT_1],    #OPPONENT_1
-    # game.OPPONENT_1: players[game.OPPONENT_2],   #OPPONENT_2
-    # game.OPPONENT_2: players[game.OWN_1]    #OWN_1
     game.OWN_1: game.OWN_2,    #ONW_2
     game.OWN_2: game.OPPONENT_1,    #OPPONENT_1
     game.OPPONENT_1: game.OPPONENT_2,   #OPPONENT_2
@@ -98,8 +96,10 @@ class RandomMTS(Player):    #モンテカルロ木探索
         #プレーヤーがきりのいいところまで終わるまで、全手動
         #その後は、残りターン数がわからないけれど、とりあえず30ターン後の結果を求める
 
-        while player != players[game.OWN_1]:    #最初に戻るまでは、途中のプレーヤーから始める
+        while player != game.OWN_1:    #最初に戻るまでは、途中のプレーヤーから始める
             hand = players[player].select(field, player)
+            if DEBUG is True:
+                print(hand) #この部分の処理が行われるタイミングを確認
             if hand is not None:    #次の手があれば
                 field.state = copy.deepcopy(field.move(field.state, player, hand))    #deepcopyしないと参照渡しみたいになる
             player = next_players[player]   #次のプレーヤーにする
@@ -108,7 +108,7 @@ class RandomMTS(Player):    #モンテカルロ木探索
             #全エージェントに一通り行動させる
 
             for turn in players: #各エージェントごとに行動させる
-                hand = players[turn].select(field, turn)
+                hand = players[player].select(field, turn)
                 if hand is not None:    #次の手があれば
                     field.state = copy.deepcopy(field.move(field.state, turn, hand))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
 
@@ -116,6 +116,9 @@ class RandomMTS(Player):    #モンテカルロ木探索
 
 class MTSNode:
     def __init__(self, parent, field, player, max_depth=-1, move=None):
+        if DEBUG is True:
+            print(player)       #エージェントを確認
+            print(max_depth)    #探索深さを確認
         self.parent = parent    #親ノード
 
         self.field = field      #フィールド（いろいろな情報てんこ盛り）
@@ -128,8 +131,6 @@ class MTSNode:
         if max_depth == 0:  #探索深さ0 => 末端だから、探索しない
             self.hands = []
         else:
-            print(self.field)
-            print(self.player)
             self.hands = self.field.hands(self.field, self.player)  #着手可能な手を全て取得
             if len(self.hands) == 0:   #どの手も打てない　たぶん、こんなことは起きない
                 self.hands.append(None)
@@ -145,6 +146,7 @@ class MTSNode:
             self.field.state = copy.deepcopy(self.field.move(self.field.state, self.player, move)) #着手させる
             child = MTSNode(self, self.field, next_players[self.player], self.max_depth-1, move) #着手させた後の子ノードを代入
         self.children.append(child)
+        print("child max_depth {}".format(child.max_depth))
         return child
 
     def select_node(self):  #期待値が最大の子ノードを返す
