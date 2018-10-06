@@ -18,22 +18,17 @@ OPPONENT_2 = -2
 MAX_BOARD_SIZE = 12
 
 class field:
-    width = 0   #縦
-    height = 0  #横
-    own_a1, own_a2, opponent_a1, opponent_a2 = {'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}   #エージェントの位置
-    value = np.zeros([width, height], dtype=int)    #タイルの得点
-    state = np.zeros([width, height], dtype=int)    #陣形
-    status = [] #ターンごとの陣形を管理
-    players = []    #ターンごとのエージェントを管理
-
     def clear(self):    #フィールド情報をクリア
         self.width = 0   #縦
         self.height = 0  #横
         self.own_a1, self.own_a2, self.opponent_a1, self.opponent_a2 = {'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}, {'x':0, 'y':0}   #エージェントの位置
         self.value = np.zeros([self.width, self.height], dtype=int)    #タイルの得点
-        self.state = np.zeros([self.width, self.height], dtype=int)    #陣形
-        self.status = [] #ターンごとの陣形を管理
-        self.players = []    #ターンごとのエージェントを管理
+        self.own_state = np.zeros([self.width, self.height], dtype=int)    #味方の陣形
+        self.opponent_state = np.zeros([self.width, self.height], dtype=int)    #敵の陣形
+        self.own_status = [] #味方のターンごとの陣形を管理
+        self.opponent_status = [] #敵のターンごとの陣形を管理
+        self.a1_poss = []   #エージェント1の座標を管理
+        self.a2_poss = []   #エージェント2の座標を管理
 
     def create_rand_field(self):    #フィールドを生成し、タイルに適当な点数を割り振る
         sum_tile = random.randint(80, 144)  #タイルの数
@@ -42,16 +37,12 @@ class field:
             self.width = random.randint(7, 12)
         self.height = sum_tile // self.width    #横の大きさをランダムに決定 上のループで、ルールに適合するはず
         self.value = np.resize(self.value, (self.width, self.height))
-        self.state = np.resize(self.state, (self.width, self.height))
+        self.own_state = np.resize(self.own_state, (self.width, self.height))
+        self.opponent_state = np.resize(self.opponent_state, (self.width, self.height))
         self.own_a1['x'] = random.randint(0, self.width//2) #エージェントの位置をランダムに決定
         self.own_a1['y'] = random.randint(0, self.height//2)
         self.opponent_a1['x'] = random.randint(0, self.width//2)
         self.opponent_a1['y'] = random.randint(0, self.height//2)
-        self.own_a2['x'] = self.own_a1['x'] #とりあえず線対称になるはずのエージェントの位置を初期化
-        self.own_a2['y'] = self.own_a1['y']
-        self.opponent_a2['x'] = self.opponent_a1['x']
-        self.opponent_a2['y'] = self.opponent_a1['y']
-
 
         bunkatsu = random.randint(0, 2) #0:水平垂直 1:水平 2:垂直
 
@@ -64,10 +55,10 @@ class field:
             self.opponent_a2['y'] = self.height - self.opponent_a1['y'] - 1
 
         #エージェントの位置をstateに反映
-        self.state[self.own_a1['x']][self.own_a1['y']] = OWN_1
-        self.state[self.own_a2['x']][self.own_a2['y']] = OWN_2
-        self.state[self.opponent_a1['x']][self.opponent_a1['y']] = OPPONENT_1
-        self.state[self.opponent_a2['x']][self.opponent_a2['y']] = OPPONENT_2
+        self.own_state[self.own_a1['x']][self.own_a1['y']] = OWN_1
+        self.own_state[self.own_a2['x']][self.own_a2['y']] = OWN_2
+        self.opponent_state[self.opponent_a1['x']][self.opponent_a1['y']] = OPPONENT_1
+        self.opponent_state[self.opponent_a2['x']][self.opponent_a2['y']] = OPPONENT_2
 
         for i in range(0, self.width):
             for j in range(0, self.height):
@@ -92,12 +83,13 @@ class field:
                     else:
                         if j > self.height / 2:
                             self.value[i][j] = self.value[i][self.height-j-1]
-        
+
     def create_from_file(self, path):
         self.width, self.height, self.value, self.own_a1, self.own_a2 = load_field_file.load_field_file(path)
-        self.state = np.resize(self.state, (self.width, self.height))
-        self.state[self.own_a1['x']][self.own_a1['y']] = OWN_1
-        self.state[self.own_a2['x']][self.own_a2['y']] = OWN_2
+        self.own_state = np.resize(self.own_state, (self.width, self.height))
+        self.opponent_state = np.resize(self.opponent_state, (self.width, self.height))
+        self.own_state[self.own_a1['x']][self.own_a1['y']] = OWN_1
+        self.own_state[self.own_a2['x']][self.own_a2['y']] = OWN_2
 
     def create_from_gui(self, value_nums, state_nums):
         self.clear()    #データをリセット
@@ -106,16 +98,17 @@ class field:
         self.height = int(value_nums[0][1].decode('ascii'))
 
         self.value = np.resize(self.value, (self.width, self.height))
-        self.state = np.resize(self.state, (self.width, self.height))
+        self.own_state = np.resize(self.own_state, (self.width, self.height))
+        self.opponent_state = np.resize(self.opponent_state, (self.width, self.height))
 
         for i in range(1, self.width+1):  #最初はフィールドサイズが入っているから、とばす
             for j in range(0, self.height):
                 self.value[i-1][j] = int(value_nums[i][j].decode('ascii'))
                 # self.state[i-1][j] = int(state_nums[i][j].decode('ascii'))
                 if int(state_nums[i][j].decode('ascii')) == 1:
-                    self.state[i-1][j] = OWN
+                    self.own_state[i-1][j] = OWN
                 elif int(state_nums[i][j].decode('ascii')) == 2:
-                    self.state[i-1][j] = OPPONENT
+                    self.opponent_state[i-1][j] = OPPONENT
 
         #GUIとsolverで座標軸の扱い方が逆
         self.own_a1['x'] = int(value_nums[self.width+1][1].decode('ascii'))
@@ -131,7 +124,8 @@ class field:
         print(" width:{0}\n height:{1}\n own_a1:{2}\n own_a2:{3}\n opponent_a1:{4}\n opponent_a2:{5}" \
             .format(self.width, self.height, self.own_a1, self.own_a2, self.opponent_a1, self.opponent_a2))
         print("value\n{0}".format(self.value))
-        print("state\n{0}".format(self.state))
+        print("own state\n{0}".format(self.own_state))
+        print("opponent state\n{0}".format(self.opponent_state))
 
     def can_move_pos(self, pos):    #その座標は操作可能か（範囲内か） posはリスト [x, y]
         if pos[0] < 0 or pos[0] >= self.width or pos[1] < 0 or pos[1] >= self.height:   #範囲外
@@ -163,7 +157,7 @@ class field:
                 return True
         return False
 
-    def hands(self, field, player):  #可能な手を一覧 移動可能な位置と、タイルをひっくり返す
+    def hands(self, state, player):  #可能な手を一覧 移動可能な位置と、タイルをひっくり返す
         #playerは、一番上にあるエージェントの識別定数でくる conv_turn_posで座標に変換
         hands = []  #可能な移動位置
         #hand = [座標, ひっくり返すか（Trueならひっくり返す Falseなら移動）]　というデータ形式
@@ -176,13 +170,13 @@ class field:
                 #print("x+i:{} y+j:{}".format(x+i, y+j))
                 if self.can_move_pos([x + i, y + j]) is False:  #範囲外
                     continue
-                elif self.state[x + i][y + j] == EMPTY:  #どちらの陣でもない
+                elif state[x + i][y + j] == EMPTY:  #どちらの陣でもない
                     hands.append([{'x':x+i, 'y':y+j}, False])    #移動
                 else:   #どちらかの陣地
                     if i == 0 and j == 0:   #自分のいる場所
                         hands.append([{'x':x+i, 'y':y+j} , False]) #移動
                     else:   #隣り合った場所
-                        if self.player_exist(field.state, [x + i, y + j]) is True:  #他のプレーヤーがいる
+                        if self.player_exist(state, [x + i, y + j]) is True:  #他のプレーヤーがいる
                             continue
                         else:   #プレーヤーがいない
                             hands.append([{'x':x+i, 'y':y+j} , False]) #移動
@@ -205,15 +199,15 @@ class field:
         if hand[1] is False:    #移動なら
             #移動元はチームの値を置く　始
             if player > 0:  #OWN
-                self.state[self.conv_turn_pos(player)['x']][self.conv_turn_pos(player)['y']] = OWN
+                state[self.conv_turn_pos(player)['x']][self.conv_turn_pos(player)['y']] = OWN
             elif player < 0:    #OPPONENT
-                self.state[self.conv_turn_pos(player)['x']][self.conv_turn_pos(player)['y']] = OPPONENT
+                state[self.conv_turn_pos(player)['x']][self.conv_turn_pos(player)['y']] = OPPONENT
             #移動元はチームの値を置く　終
-            self.state[hand[0]['x']][hand[0]['y']] = player  #移動先にタイルを置く
+            state[hand[0]['x']][hand[0]['y']] = player  #移動先にタイルを置く
             self.conv_turn_pos(player)['x'] = hand[0]['x']  #エージェントの移動
             self.conv_turn_pos(player)['y'] = hand[0]['y']
         else:
-            self.state[hand[0]['x']][hand[0]['y']] = EMPTY   #タイルを除去
+            state[hand[0]['x']][hand[0]['y']] = EMPTY   #タイルを除去
 
         return state
 
@@ -273,23 +267,37 @@ class field:
 
         return sscore, _reach_end
 
-    def judge(self, state):
+    def judge(self, own_state, opponent_state):
         own_tile, own_territory = 0, 0
         opponent_tile, opponent_territory = 0, 0
 
         for i in range(0, self.width):
             for j in range(0, self.height):
-                if self.state[i][j] > 0: own_tile += self.value[i][j]    #OWN_1とかが1以上だから
-                if self.state[i][j] < 0: opponent_tile += self.value[i][j]   #OPPONEN_1とかが-1以下だから
+                if own_state[i][j] != 0: own_tile += self.value[i][j]    #OWN_1とかが1以上だから
+                if opponent_state[i][j] != 0: opponent_tile += self.value[i][j]   #OPPONEN_1とかが-1以下だから
 
-        own_territory = self.area_score(state, OWN)
-        opponent_territory = self.area_score(state, OPPONENT)
+        own_territory = self.area_score(own_state, OWN)
+        opponent_territory = self.area_score(opponent_state, OPPONENT)
 
         if own_tile + own_territory > opponent_tile + opponent_territory:
             return OWN
         else:
             return OPPONENT
 
+    def check_team(self, player):   #エージェントが属すチームを返す
+        if player > 0:
+            return OWN
+        if player < 0:
+            return OPPONENT
+
+    def agent_field(self, pos): #エージェントの位置を盤面で表す pos リスト[x,y]
+        x = pos[0]
+        y = pos[1]
+
+        pos_field = np.zeros([self.width, self.height], dtype=int)  #全部0の盤面
+        pos_field[x][y] = 1
+
+        return pos_field
 
 '''
 # for check

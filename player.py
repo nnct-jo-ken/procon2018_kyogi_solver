@@ -25,7 +25,10 @@ class RandomUniform(Player):    #探索なしでランダム打ち
         return self.select_randomly(field, player)
 
     def select_randomly(self, field, player):
-        hands = field.hands(field, player)  #可能な手
+        if field.check_team(player) == game.OWN:
+            hands = field.hands(field.own_state, player)  #可能な手
+        elif field.check_team(player) == game.OPPONENT:
+            hands = field.hands(field.opponent_state, player)  #可能な手
         if len(hands) == 0: #手がない
             return None
         else:
