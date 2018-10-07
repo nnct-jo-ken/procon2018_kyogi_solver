@@ -14,11 +14,9 @@ import train_data_creator
 import game
 import evaluate
 
-GAMMA = 0.97    #割引率
 LR = 0.001   #学習率(learning rate)
-BATCH_SIZE = 32 #一度に学習する局面数
+BATCH_GAME_SIZE = 5 #一度に学習する試合数
 EPOCH = 50 #1つの訓練データを何回学習させるか
-TURN = 32
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "./output/model.pth")       #モデルの保存パス
 BEST_MODEL_PATH = os.path.join(os.path.dirname(__file__), "./output/best_model.pth")       #最善モデルの保存パス
@@ -49,27 +47,34 @@ else:
     fine_tune = False
     optimizer = optim.Adam(model.parameters(), lr=LR)
 
-criterion = nn.MSELoss()   #推論値と理論値の差を計算
+criterion = nn.CrossEntropyLoss()   #推論値と理論値の差を計算
 
 max_win_ratio = -1.0    #勝率の最高値
 
 for epoch in range(1, EPOCH+1):   #エポックを回す
     print("epoch:", epoch)          #現在のエポック数（何回目のループか）
 
-    record_index = 0
+    record_index = 0    #読み出す試合データの最初のインデックス
 
     while True: #全学習データを扱う
-        print("epoch:{0} record:{1}".format(epoch, record_index))
+        print("epoch:{0} record:{1}".format(epoch, record_index+1))
 
-        # 一括でデータセットを作った場合
-        # x_batch = x_train[j : j+BATCH_SIZE] #訓練データをバッチサイズ分取り出し
-        # y_batch = y_train[j : j+BATCH_SIZE] #教師データをバッチサイズ分取り出し
-
-        #バッチサイズ分の訓練データ（陣形とタイルの点数）と正解ラベルを取得
-        #datasetは、[value, state, player, won] それぞれの要素は、バッチサイズ分の対局の全局面でシャッフルなし
-        dataset = train_data_creator.get_dataset(RECORD_LIST_PATH, BATCH_SIZE, record_index)
+        #バッチサイズ分の訓練データと正解ラベルを取得
+        #datasetは、[X_value, X_own_status, X_opponent_status, X_own_points, X_opponent_points, X_a1_poss, X_a2_poss, won]
+        #それぞれの要素は、バッチサイズ分の対局の全局面でシャッフルなし
+        dataset = train_data_creator.get_dataset(RECORD_LIST_PATH, BATCH_GAME_SIZE, record_index)
         if dataset is None: #学習データがなくなった
             break
+
+        ds_value_list          = dataset[0]
+        ds_own_state_list      = dataset[1]
+        ds_opponent_state_list = dataset[2]
+        ds_own_point_list      = dataset[3]
+        ds_opponent_point_list = dataset[4]
+        ds_a1_pos_list         = dataset[5]
+        ds_a2_pos_list         = dataset[6]
+        ds_best_move_list      = dataset[7]
+        ds_won_list            = dataset[8]
 
         # train_np = np.r_[dataset[0], dataset[1], dataset[2]]    #入力データを結合し、一つの配列にする
         target_np = np.copy(dataset[3])
@@ -78,25 +83,48 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         # train_torch = torch.from_numpy(train_np).float()
         # target_torch = torch.from_numpy(target_np).long()
 
-        dataset[0] = dataset[0].reshape(len(dataset[0]), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #value
-        dataset[1] = dataset[1].reshape(len(dataset[1]), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #state
-        dataset[2] = dataset[2].reshape(len(dataset[2]), 1, 1, 1)   #agent
-        dataset[3] = dataset[3].reshape(len(dataset[3]), 1, 1, 1)   #won
+        ds_value_list = ds_value_list.reshape(len(ds_value_list), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #value
+        ds_own_state_list = ds_own_state_list.reshape(len(ds_own_state_list), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #state
+        ds_opponent_state_list = ds_opponent_state_list.reshape(len(ds_opponent_state_list), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #state
+        ds_own_point_list = ds_own_point_list.reshape(len(ds_own_point_list), 1, 1, 1)   #point
+        ds_opponent_point_list = ds_opponent_point_list.reshape(len(ds_opponent_point_list), 1, 1, 1)   #point
+        ds_a1_pos_list = ds_a1_pos_list.reshape(len(ds_a1_pos_list), 1, 1, 1)   #agent pos
+        ds_a2_pos_list = ds_a2_pos_list.reshape(len(ds_a2_pos_list), 1, 1, 1)   #agent pos
+        ds_best_move_list = ds_best_move_list.reshape(len(ds_best_move_list), 1, 1, 1)   #best move
+        ds_won_list = ds_won_list.reshape(len(ds_won_list), 1, 1, 1)   #won
 
-        train = torch.utils.data.TensorDataset(torch.from_numpy(dataset[0]).float(), torch.from_numpy(dataset[1]).float(), torch.from_numpy(dataset[2]).float(), torch.from_numpy(dataset[3]).float())
-        train_loader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
+        train_1 = torch.utils.data.TensorDataset( \
+            torch.from_numpy(ds_value_list).float(), \
+            torch.from_numpy(ds_own_state_list).float(), \
+            torch.from_numpy(ds_opponent_state_list).float(), \
+            # torch.from_numpy(ds_own_point_list).float(), \
+            # torch.from_numpy(ds_opponent_point_list).float(), \
+            torch.from_numpy(ds_a1_pos_list).float()
+            # torch.from_numpy(ds_best_move_list).float()
+            )
+
+        train_2 = torch.utils.data.TensorDataset( \
+            torch.from_numpy(ds_value_list).float(), \
+            torch.from_numpy(ds_own_state_list).float(), \
+            torch.from_numpy(ds_opponent_state_list).float(), \
+            # torch.from_numpy(ds_own_point_list).float(), \
+            # torch.from_numpy(ds_opponent_point_list).float(), \
+            torch.from_numpy(ds_a2_pos_list).float()
+            # torch.from_numpy(ds_best_move_list).float()
+        )
+
+        train_loader_1 = torch.utils.data.DataLoader(train_1, batch_size=BATCH_GAME_SIZE, shuffle=True)
+        train_loader_2 = torch.utils.data.DataLoader(train_2, batch_size=BATCH_GAME_SIZE, shuffle=True)
 
         total_loss = 0
-        for i, data in enumerate(train_loader):
+        for i, data in enumerate(train_loader_1):
             model.train()   #訓練モード
-            x, y, z, t = data
             if torch.cuda.is_available(): #GPUを使える時
-                x, y, z, t = torch.autograd.Variable(x.cuda()), torch.autograd.Variable(y.cuda()), torch.autograd.Variable(z.cuda()),torch.autograd.Variable(t.cuda())
+                data = torch.autograd.Variable(data.cuda())
             else:
-                x, y, z, t = torch.autograd.Variable(x), torch.autograd.Variable(y), torch.autograd.Variable(z), torch.autograd.Variable(t)
+                data = torch.autograd.Variable(data)
             optimizer.zero_grad()
-            out = model(x, y, z)
-            t = t.reshape((32, 1))  #入力にラベルのデータの大きさを合わせる
+            out = model(data)
 
             # print(x.shape)
             # print(y.shape)
@@ -108,7 +136,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
             optimizer.step()
 
             if i % 10 == 0:    #学習10回ごとにロスの平均を表示 ミニバッチが変わるごとにリセット
-                print("[epoch:{0} minibatch:{1} aspect:{2}] loss: {3}".format(epoch, record_index//BATCH_SIZE+1, i, total_loss / 10))    #最初に表示されるlossは、本来の1/10
+                print("[epoch:{0} minibatch:{1} aspect:{2}] loss: {3}".format(epoch, record_index//BATCH_GAME_SIZE+1, i, total_loss / 10))    #最初に表示されるlossは、本来の1/10
                 total_loss = 0.0
             
             # print("x:{0} t:{1} y:{2} loss:{3}".format(x, t, y, loss))
@@ -127,7 +155,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
                 else:
                     print("{0} <= {1}".format(ratio, max_win_ratio))
 
-        record_index += BATCH_SIZE
+        record_index += BATCH_GAME_SIZE
 
     torch.save(optimizer.state_dict(), OPTIMIZER_PATH)  #オプティマイザの保存
 

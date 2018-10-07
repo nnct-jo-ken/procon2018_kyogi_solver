@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import copy
+import game
 import player
 import neural_player
 
@@ -46,12 +48,29 @@ def play(target, opponent, play_num):
                 if DEBUG is True:
                     print("player:{0} hand:{1}".format(turn, hand))
                 if hand is not None:    #次の手があれば
-                    field.status.append(field.state)
-                    field.players.append(turn)
-                    field.state = field.move(field.state, turn, hand)
+                    #陣形を、管理しているリストに入れる
+                    if field.check_team(turn) == game.OWN:
+                        field.own_status.append(field.own_state)
+                    elif field.check_team(turn) == game.OPPONENT:
+                        field.opponent_status.append(field.opponent_state)
 
-        won = field.judge(field.state)      #勝者
-        if won > 0: wons += 1   #自陣の勝ちなら、勝ち数を1つ増やす
+                    #プレーヤーの位置を盤面にして、管理しているリストに入れる
+                    if field.check_team(turn) == game.OWN:
+                        if turn == game.OWN_1:
+                            field.a1_poss.append(field.conv_agent_field([field.own_a1['x'], field.own_a1['y']]))
+                        if turn == game.OWN_2:
+                            field.a2_poss.append(field.conv_agent_field([field.own_a2['x'], field.own_a2['y']]))
+
+                    #移動させる
+                    if field.check_team(turn) == game.OWN:
+                        field.own_state = copy.deepcopy(field.move(field.own_state, turn, hand))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
+                        field.own_points.append(field.point(field.own_state))   #得点計算
+                    elif field.check_team(turn) == game.OPPONENT:
+                        field.opponent_state = copy.deepcopy(field.move(field.opponent_state, turn, hand))
+                        field.opponent_points.append(field.point(field.opponent_state)) #得点計算
+
+        won = field.judge(field.own_state, field.opponent_state)      #勝者
+        if won == game.OWN: wons += 1   #自陣の勝ちなら、勝ち数を1つ増やす
 
     return wons / play_num  #勝率
 

@@ -7,13 +7,15 @@ import load_field_file
 
 DEBUG = False    #デバッグ時はTrue
 
-EMPTY = 0       #空のマス
 OWN = 3         #自チーム
 OPPONENT = -3   #敵チーム
 OWN_1 = 1       #自チームのエージェント１
 OWN_2 = 2
 OPPONENT_1 = -1 #敵チームのエージェント１
 OPPONENT_2 = -2
+
+EXISTENCE = 1   #プレーヤーがいる
+EMPTY = 0       #空のマス
 
 MAX_BOARD_SIZE = 12
 
@@ -29,6 +31,8 @@ class field:
         self.opponent_status = [] #敵のターンごとの陣形を管理
         self.a1_poss = []   #エージェント1の座標を管理
         self.a2_poss = []   #エージェント2の座標を管理
+        self.own_points = []    #味方のターンごとに獲得した点数
+        self.opponent_points = []   #敵のターンごとに獲得した点数
 
     def create_rand_field(self):    #フィールドを生成し、タイルに適当な点数を割り振る
         sum_tile = random.randint(80, 144)  #タイルの数
@@ -55,10 +59,10 @@ class field:
             self.opponent_a2['y'] = self.height - self.opponent_a1['y'] - 1
 
         #エージェントの位置をstateに反映
-        self.own_state[self.own_a1['x']][self.own_a1['y']] = OWN_1
-        self.own_state[self.own_a2['x']][self.own_a2['y']] = OWN_2
-        self.opponent_state[self.opponent_a1['x']][self.opponent_a1['y']] = OPPONENT_1
-        self.opponent_state[self.opponent_a2['x']][self.opponent_a2['y']] = OPPONENT_2
+        self.own_state[self.own_a1['x']][self.own_a1['y']] = EXISTENCE
+        self.own_state[self.own_a2['x']][self.own_a2['y']] = EXISTENCE
+        self.opponent_state[self.opponent_a1['x']][self.opponent_a1['y']] = EXISTENCE
+        self.opponent_state[self.opponent_a2['x']][self.opponent_a2['y']] = EXISTENCE
 
         for i in range(0, self.width):
             for j in range(0, self.height):
@@ -88,8 +92,8 @@ class field:
         self.width, self.height, self.value, self.own_a1, self.own_a2 = load_field_file.load_field_file(path)
         self.own_state = np.resize(self.own_state, (self.width, self.height))
         self.opponent_state = np.resize(self.opponent_state, (self.width, self.height))
-        self.own_state[self.own_a1['x']][self.own_a1['y']] = OWN_1
-        self.own_state[self.own_a2['x']][self.own_a2['y']] = OWN_2
+        self.own_state[self.own_a1['x']][self.own_a1['y']] = EXISTENCE
+        self.own_state[self.own_a2['x']][self.own_a2['y']] = EXISTENCE
 
     def create_from_gui(self, value_nums, state_nums):
         self.clear()    #データをリセット
@@ -104,11 +108,10 @@ class field:
         for i in range(1, self.width+1):  #最初はフィールドサイズが入っているから、とばす
             for j in range(0, self.height):
                 self.value[i-1][j] = int(value_nums[i][j].decode('ascii'))
-                # self.state[i-1][j] = int(state_nums[i][j].decode('ascii'))
                 if int(state_nums[i][j].decode('ascii')) == 1:
-                    self.own_state[i-1][j] = OWN
+                    self.own_state[i-1][j] = EXISTENCE
                 elif int(state_nums[i][j].decode('ascii')) == 2:
-                    self.opponent_state[i-1][j] = OPPONENT
+                    self.opponent_state[i-1][j] = EXISTENCE
 
         #GUIとsolverで座標軸の扱い方が逆
         self.own_a1['x'] = int(value_nums[self.width+1][1].decode('ascii'))
@@ -133,7 +136,7 @@ class field:
         else:
             return True
 
-    def player_exist(self, state, pos): #その座標にプレーヤがいるか posはリスト [x, y]
+    def player_exist(self, pos): #その座標にプレーヤがいるか posはリスト [x, y]
         x = pos[0]
         y = pos[1]
 
@@ -157,7 +160,7 @@ class field:
                 return True
         return False
 
-    def hands(self, state, player):  #可能な手を一覧 移動可能な位置と、タイルをひっくり返す
+    def hands(self, own_state, opponent_state, player):  #可能な手を一覧 移動可能な位置と、タイルをひっくり返す
         #playerは、一番上にあるエージェントの識別定数でくる conv_turn_posで座標に変換
         hands = []  #可能な移動位置
         #hand = [座標, ひっくり返すか（Trueならひっくり返す Falseなら移動）]　というデータ形式
@@ -170,13 +173,13 @@ class field:
                 #print("x+i:{} y+j:{}".format(x+i, y+j))
                 if self.can_move_pos([x + i, y + j]) is False:  #範囲外
                     continue
-                elif state[x + i][y + j] == EMPTY:  #どちらの陣でもない
+                elif own_state[x + i][y + j] == EMPTY and opponent_state[x + i][y + j] == EMPTY:  #どちらの陣でもない
                     hands.append([{'x':x+i, 'y':y+j}, False])    #移動
                 else:   #どちらかの陣地
                     if i == 0 and j == 0:   #自分のいる場所
                         hands.append([{'x':x+i, 'y':y+j} , False]) #移動
                     else:   #隣り合った場所
-                        if self.player_exist(state, [x + i, y + j]) is True:  #他のプレーヤーがいる
+                        if self.player_exist([x + i, y + j]) is True:  #他のプレーヤーがいる
                             continue
                         else:   #プレーヤーがいない
                             hands.append([{'x':x+i, 'y':y+j} , False]) #移動
@@ -197,13 +200,7 @@ class field:
         if self.can_move_pos([hand[0]['x'], hand[0]['y']]) is False: #範囲内か確認
             raise Exception("Can't move!")
         if hand[1] is False:    #移動なら
-            #移動元はチームの値を置く　始
-            if player > 0:  #OWN
-                state[self.conv_turn_pos(player)['x']][self.conv_turn_pos(player)['y']] = OWN
-            elif player < 0:    #OPPONENT
-                state[self.conv_turn_pos(player)['x']][self.conv_turn_pos(player)['y']] = OPPONENT
-            #移動元はチームの値を置く　終
-            state[hand[0]['x']][hand[0]['y']] = player  #移動先にタイルを置く
+            state[hand[0]['x']][hand[0]['y']] = EXISTENCE  #移動先にタイルを置く
             self.conv_turn_pos(player)['x'] = hand[0]['x']  #エージェントの移動
             self.conv_turn_pos(player)['y'] = hand[0]['y']
         else:
@@ -211,13 +208,11 @@ class field:
 
         return state
 
-    def area_score(self, state, team):
+    def area_score(self, state):
         score = 0   #領域ポイント
         # height個の要素のリストがwidth個入ったリストができる
         is_searched = [[False for i in range(self.height)] for j in range(self.width)]  #探索済みか
         is_end = [[False for i in range(self.height)] for j in range(self.width)]   #端か
-
-        my_team = [team, team//3, team//3*2]    #自チームを表すstate上の数字
 
         #端の部分はTrueを代入
         for x in range(self.width):
@@ -227,21 +222,21 @@ class field:
 
         for x in range(self.width):
             for y in range(self.height):
-                if state[x][y] not in my_team:    #自チームではない
+                if state[x][y] == EMPTY:    #自チームのタイルではない
                     if is_searched[x][y] is False:  #未探索
                         _reach_end = False  #まだ探索が終了していない
                         sscore = 0
-                        sscore, _reach_end = self.count_area_score(state, [x, y], is_searched, is_end, _reach_end, sscore, my_team)
+                        sscore, _reach_end = self.count_area_score(state, [x, y], is_searched, is_end, _reach_end, sscore)
                         if _reach_end is False:
                             score += sscore
 
         return score
 
-    def count_area_score(self, state, pos, is_searched, is_end, _reach_end, sscore, teams): #posは[x, y] teamsはリスト[team, team_a1, team_a2]
+    def count_area_score(self, state, pos, is_searched, is_end, _reach_end, sscore): #posは[x, y]
         x = pos[0]
         y = pos[1]
 
-        if state[x][y] in teams or is_searched[x][y] == True: #自陣 or すでに探索済み
+        if state[x][y] == EXISTENCE or is_searched[x][y] == True: #自陣 or すでに探索済み
             return sscore, _reach_end
         is_searched[x][y] = True    #探索済みにする
         sscore += abs(self.value[x][y])   #タイルポイントの絶対値を代入
@@ -249,19 +244,19 @@ class field:
             _reach_end = True
 
         if x > 0:
-            s, r = self.count_area_score(state, [x-1,y], is_searched, is_end, _reach_end, sscore, teams)
+            s, r = self.count_area_score(state, [x-1,y], is_searched, is_end, _reach_end, sscore)
             sscore = s
             _reach_end = r
         if x < self.width-1:
-            s,r = self.count_area_score(state, [x+1,y], is_searched, is_end, _reach_end, sscore, teams)
+            s,r = self.count_area_score(state, [x+1,y], is_searched, is_end, _reach_end, sscore)
             sscore = s
             _reach_end = r
         if y > 0:
-            s, r = self.count_area_score(state, [x,y-1], is_searched, is_end, _reach_end, sscore, teams)
+            s, r = self.count_area_score(state, [x,y-1], is_searched, is_end, _reach_end, sscore)
             sscore = s
             _reach_end = r
         if y < self.height-1:
-            s, r = self.count_area_score(state, [x,y+1], is_searched, is_end, _reach_end, sscore, teams)
+            s, r = self.count_area_score(state, [x,y+1], is_searched, is_end, _reach_end, sscore)
             sscore = s
             _reach_end = r
 
@@ -273,16 +268,27 @@ class field:
 
         for i in range(0, self.width):
             for j in range(0, self.height):
-                if own_state[i][j] != 0: own_tile += self.value[i][j]    #OWN_1とかが1以上だから
-                if opponent_state[i][j] != 0: opponent_tile += self.value[i][j]   #OPPONEN_1とかが-1以下だから
+                if own_state[i][j] == EXISTENCE: own_tile += self.value[i][j]    #塗りつぶし済みのタイルの点数を集計
+                if opponent_state[i][j] == EXISTENCE: opponent_tile += self.value[i][j]
 
-        own_territory = self.area_score(own_state, OWN)
-        opponent_territory = self.area_score(opponent_state, OPPONENT)
+        own_territory = self.area_score(own_state)
+        opponent_territory = self.area_score(opponent_state)
 
         if own_tile + own_territory > opponent_tile + opponent_territory:
             return OWN
         else:
             return OPPONENT
+
+    def point(self, state): #タイルポイントと領域ポイントの合算を返す
+        tile, territory = 0, 0
+
+        for i in range(0, self.width):
+            for j in range(0, self.height):
+                if state[i][j] == EXISTENCE: tile += self.value[i][j]    #塗りつぶし済みのタイルの点数を集計
+
+        territory = self.area_score(state)
+
+        return tile + territory
 
     def check_team(self, player):   #エージェントが属すチームを返す
         if player > 0:
@@ -290,14 +296,63 @@ class field:
         if player < 0:
             return OPPONENT
 
-    def agent_field(self, pos): #エージェントの位置を盤面で表す pos リスト[x,y]
+    def conv_agent_field(self, pos): #エージェントの位置を盤面で表す pos リスト[x,y]
         x = pos[0]
         y = pos[1]
 
         pos_field = np.zeros([self.width, self.height], dtype=int)  #全部0の盤面
-        pos_field[x][y] = 1
+        pos_field[x][y] = EXISTENCE
 
         return pos_field
+
+    def best_move(self, own_state, opponent_state, player): #その時点で最も点を得られる手を方向で出力
+        move_point = {} #手とその時の得点を管理する辞書
+        hands = self.hands(own_state, opponent_state, player) #可能な手を全てリストアップ
+
+        for hand in hands:
+            #元の盤面が書き換わるのを防ぐ
+            my_own_state = copy.deepcopy(own_state)
+            my_opponent_state = copy.deepcopy(opponent_state)
+
+            if self.check_team(player) == OWN:
+                my_own_state = copy.deepcopy(self.move(my_own_state, player, hand))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
+                move_point[tuple(hand[0].items())] = self.point(my_own_state) #得点計算
+            elif self.check_team(player) == OPPONENT:
+                my_opponent_state = copy.deepcopy(self.move(my_opponent_state, player, hand))
+                move_point[tuple(hand[0].items())] = self.point(my_opponent_state)
+
+        max_sorted = sorted(move_point.items(), key=lambda x: x[1], reverse=True) #リストに変換して得点の降順にソート
+        return dict(max_sorted[0][0]) #得られる得点が最大の手 辞書型に変換済み
+
+    def conv_hand_direction(self, turn, hand):    #エージェントの位置と手から、移動方向を番号で表す
+        agent_x = self.conv_turn_pos(turn)['x'] #座標に変換
+        agent_y = self.conv_turn_pos(turn)['y']
+
+        hand_x = hand[0]['x']
+        hand_y = hand[0]['y']
+
+        dis_x = hand_x - agent_x
+        dis_y = hand_y - agent_y
+
+        if dis_x == 0 and dis_y == 0:       #停留
+            return 0
+        elif dis_x == -1 and dis_y == 0:    #上
+            return 1
+        elif dis_x == -1 and dis_y == 1:    #右上
+            return 2
+        elif dis_x == 0 and dis_y == 1:     #右
+            return 3
+        elif dis_x == 1 and dis_y == 1:     #右下
+            return 4
+        elif dis_x == 1 and dis_y == 0:     #下
+            return 5
+        elif dis_x == 1 and dis_y == -1:    #左下
+            return 6
+        elif dis_x == 0 and dis_y == -1:    #左
+            return 7
+        elif dis_x == -1 and dis_y == -1:   #左上
+            return 8
+
 
 '''
 # for check

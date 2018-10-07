@@ -17,7 +17,7 @@ class DQNPlayer(player.Player):
         states = [] #playerが移動可能な位置に移動した状態をリストに突っ込む
         eva_val = []    #推論した評価値 statesに対応している
 
-        hands = field.hands(field, player)  #可能な手
+        hands = field.hands(field.own_state, field.opponent_state, player)  #可能な手
         if len(hands) == 0: #手がない
             return None
 

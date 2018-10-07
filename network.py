@@ -14,41 +14,26 @@ class Network(nn.Module):
     def __init__(self):
         #ニューラルネットワークを作成 <= 畳み込み(Conv2d)を使った方がいい（画像の特徴を抽出できる）と思うけれど、後回し
         super(Network, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=ch, kernel_size=(4, 4), stride=1, padding=1)
-        self.pool1 = nn.MaxPool2d(kernel_size=[2, 2], stride=1, padding=1)
-        self.conv2 = nn.Conv2d(in_channels=ch, out_channels=ch, kernel_size=(4, 4), stride=1, padding=1)
-        self.pool2 = nn.MaxPool2d(kernel_size=[2, 2], stride=1, padding=1)
-        self.conv3 = nn.Conv2d(in_channels=ch, out_channels=ch, kernel_size=(4, 4), stride=1, padding=1)
-        self.pool3 = nn.MaxPool2d(kernel_size=[2, 2], stride=1, padding=1)
-        self.fc1 = nn.Linear(ch * 12 * 12 * 2 + 1, 100)
-        self.fc2 = nn.Linear(100, 100)
-        self.fc3 = nn.Linear(100, 1)     #出力は、勝ち負けの値1コ
+        self.conv1 = nn.Conv2d(in_channels=4, out_channels=64, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1)
+        self.conv4 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1)
 
-        # self.fc1 = nn.Linear(1, 10)   #入力はプレイヤーが1次元データだから、1 ニューロンは10
-        # self.fc2 = nn.Linear(10, 10)
-        # self.fc3 = nn.Linear(10, 1)     #出力は勝ち負けを表す値1コ
+        self.fc1 = nn.Linear(in_features=64, out_features=128)
+        self.fc2 = nn.Linear(in_features=128, out_features=128)
+        self.fc3 = nn.Linear(in_features=128, out_features=128)
+        self.fc4 = nn.Linear(in_features=128, out_features=9)   #出力：8方向＋停留
 
-    def forward(self, x, y, z):
-        x = self.pool1(F.relu(self.conv1(x)))
-        x = self.pool2(F.relu(self.conv2(x)))
-        x = self.pool3(F.relu(self.conv3(x)))
+    def forward(self, x):   #xは4チャンネルを含む（タイルの点数、自陣・敵陣の陣形、エージェントの位置）
+        out = F.relu(self.conv1(x))
+        out = F.relu(self.conv2(out))
+        out = F.relu(self.conv3(out))
+        out = F.relu(self.conv4(out))
+        out = F.max_pool2d(out, kernel_size=x.shape[2:])
 
-        y = self.pool1(F.relu(self.conv1(y)))
-        y = self.pool2(F.relu(self.conv2(y)))
-        y = self.pool3(F.relu(self.conv3(y)))
-
-        x = x.view(-1, ch * 12 * 12)
-        y = y.view(-1, ch * 12 * 12)
-        z = z.view(-1, 1)
-        merge_layer = torch.cat([x, y, z], dim=1)  #水平方向にくっつけている
-
-        out = F.relu(self.fc1(merge_layer))
+        b,c,h,w = out.shape #batch channnel height width
+        out = F.relu(self.fc1(out.reshape(b,-1)))
         out = F.relu(self.fc2(out))
-        out = self.fc3(out)
-        return out
-
-        # h1 = F.relu(self.fc1(x)) #中間層の活性化関数はReLU
-        # h2 = F.relu(self.fc2(h1))
-        # h3 = self.fc3(h2)
-        # return h3
-        #return F.log_softmax(x) #出力層の活性化関数はソフトマックス(softmax)
+        out = F.relu(self.fc3(out))
+        out = F.relu(self.fc4(out))
+        return F.softmax(out)
