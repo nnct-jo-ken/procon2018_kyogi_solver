@@ -6,7 +6,7 @@ import numpy as np
 import game
 import player
 
-DEBUG = True    #デバッグ時はTrue
+DEBUG = False    #デバッグ時はTrue
 
 RECORD_NUM = 1000  #対局データ作成数
 TURN = 60   #1試合あたりのターン数

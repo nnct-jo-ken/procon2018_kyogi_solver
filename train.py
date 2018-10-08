@@ -73,8 +73,8 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         ds_opponent_point_list = dataset[4]
         ds_a1_pos_list         = dataset[5]
         ds_a2_pos_list         = dataset[6]
-        ds_a1_best_move_list      = dataset[7]
-        ds_a2_best_move_list      = dataset[8]
+        ds_a1_best_move_list   = dataset[7]
+        ds_a2_best_move_list   = dataset[8]
         ds_won_list            = dataset[9]
 
         # train_np = np.r_[dataset[0], dataset[1], dataset[2]]    #入力データを結合し、一つの配列にする
@@ -95,44 +95,35 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         ds_a2_best_move_list = ds_a2_best_move_list.reshape(len(ds_a2_best_move_list), 1, 1, 1)   #best move
         ds_won_list = ds_won_list.reshape(len(ds_won_list), 1, 1, 1)   #won
 
-        train_1 = torch.utils.data.TensorDataset( \
-            torch.from_numpy(ds_value_list).float(), \
-            torch.from_numpy(ds_own_state_list).float(), \
-            torch.from_numpy(ds_opponent_state_list).float(), \
-            # torch.from_numpy(ds_own_point_list).float(), \
-            # torch.from_numpy(ds_opponent_point_list).float(), \
-            torch.from_numpy(ds_a1_pos_list).float()
-            # torch.from_numpy(ds_a1_best_move_list).float()
-            )
+        a1_train_np = np.array([ds_value_list, ds_own_state_list, ds_opponent_state_list, ds_a1_pos_list])
+        a2_train_np = np.array([ds_value_list, ds_own_state_list, ds_opponent_state_list, ds_a2_pos_list])
 
-        train_2 = torch.utils.data.TensorDataset( \
-            torch.from_numpy(ds_value_list).float(), \
-            torch.from_numpy(ds_own_state_list).float(), \
-            torch.from_numpy(ds_opponent_state_list).float(), \
-            # torch.from_numpy(ds_own_point_list).float(), \
-            # torch.from_numpy(ds_opponent_point_list).float(), \
-            torch.from_numpy(ds_a2_pos_list).float()
-            # torch.from_numpy(ds_a2_best_move_list).float()
-        )
+        a1_target_np = np.array(ds_a1_best_move_list)
+        a2_target_np = np.array(ds_a2_best_move_list)
+
+        train_1 = torch.utils.data.TensorDataset(torch.from_numpy(a1_train_np).float(), torch.from_numpy(a1_target_np).float())
+        train_2 = torch.utils.data.TensorDataset(torch.from_numpy(a2_train_np).float(), torch.from_numpy(a2_target_np).float())
 
         train_loader_1 = torch.utils.data.DataLoader(train_1, batch_size=BATCH_GAME_SIZE, shuffle=True)
         train_loader_2 = torch.utils.data.DataLoader(train_2, batch_size=BATCH_GAME_SIZE, shuffle=True)
 
         total_loss = 0
         for i, data in enumerate(train_loader_1):
+            inputs, labels = data
+
             model.train()   #訓練モード
             if torch.cuda.is_available(): #GPUを使える時
-                data = torch.autograd.Variable(data.cuda())
+                inputs, labels = torch.autograd.Variable(inputs.cuda()), torch.autograd.Variable(labels.cuda())
             else:
-                data = torch.autograd.Variable(data)
+                inputs, labels = torch.autograd.Variable(inputs), torch.autograd.Variable(labels)
             optimizer.zero_grad()
-            out = model(data)
+            out = model(inputs)
 
             # print(x.shape)
             # print(y.shape)
             # print(t.shape)
 
-            loss = criterion(out, t)
+            loss = criterion(out, labels)
             total_loss += loss.item()
             loss.backward()
             optimizer.step()
