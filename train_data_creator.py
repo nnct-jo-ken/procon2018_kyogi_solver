@@ -12,7 +12,7 @@ def get_partial(record):    #対局データから、各種データを分離
         npz = np.load(record)
         X_value = npz["X_value"]
         X_own_status = npz["X_own_status"]
-        X_opponent_status = npz["x_opponent_status"]
+        X_opponent_status = npz["X_opponent_status"]
         X_own_points = npz["X_own_points"]
         X_opponent_points = npz["X_opponent_points"]
         X_a1_poss = npz["X_a1_poss"]
