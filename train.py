@@ -77,9 +77,6 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         ds_a2_best_move_list   = dataset[8]
         ds_won_list            = dataset[9]
 
-        # train_np = np.r_[dataset[0], dataset[1], dataset[2]]    #入力データを結合し、一つの配列にする
-        target_np = np.copy(dataset[3])
-
         # #データ型をndarrayからtorchに変更 float,longにしているのは決まりだから
         # train_torch = torch.from_numpy(train_np).float()
         # target_torch = torch.from_numpy(target_np).long()
@@ -95,14 +92,20 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         ds_a2_best_move_list = ds_a2_best_move_list.reshape(len(ds_a2_best_move_list), 1, 1, 1)   #best move
         ds_won_list = ds_won_list.reshape(len(ds_won_list), 1, 1, 1)   #won
 
-        a1_train_np = np.array([ds_value_list, ds_own_state_list, ds_opponent_state_list, ds_a1_pos_list])
-        a2_train_np = np.array([ds_value_list, ds_own_state_list, ds_opponent_state_list, ds_a2_pos_list])
+        a1_train_np = []    #入力データのリスト
+        a2_train_np = []
+
+        for ds_value, ds_own_state, ds_opponent_state, ds_a1_pos in zip(ds_value_list, ds_own_state_list, ds_opponent_state_list, ds_a1_pos_list):
+            a1_train_np.append(np.array([ds_value, ds_own_state, ds_opponent_state, ds_a1_pos]))
+
+        for ds_value, ds_own_state, ds_opponent_state, ds_a2_pos in zip(ds_value_list, ds_own_state_list, ds_opponent_state_list, ds_a2_pos_list):
+            a2_train_np.append(np.array([ds_value, ds_own_state, ds_opponent_state, ds_a2_pos]))
 
         a1_target_np = np.array(ds_a1_best_move_list)
         a2_target_np = np.array(ds_a2_best_move_list)
 
-        train_1 = torch.utils.data.TensorDataset(torch.from_numpy(a1_train_np).float(), torch.from_numpy(a1_target_np).float())
-        train_2 = torch.utils.data.TensorDataset(torch.from_numpy(a2_train_np).float(), torch.from_numpy(a2_target_np).float())
+        train_1 = torch.utils.data.TensorDataset(torch.from_numpy(a1_train_np).float(), torch.from_numpy(a1_target_np).long())
+        train_2 = torch.utils.data.TensorDataset(torch.from_numpy(a2_train_np).float(), torch.from_numpy(a2_target_np).long())
 
         train_loader_1 = torch.utils.data.DataLoader(train_1, batch_size=BATCH_GAME_SIZE, shuffle=True)
         train_loader_2 = torch.utils.data.DataLoader(train_2, batch_size=BATCH_GAME_SIZE, shuffle=True)
