@@ -81,16 +81,16 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         # train_torch = torch.from_numpy(train_np).float()
         # target_torch = torch.from_numpy(target_np).long()
 
-        ds_value_list = ds_value_list.reshape(len(ds_value_list), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #value
-        ds_own_state_list = ds_own_state_list.reshape(len(ds_own_state_list), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #state
-        ds_opponent_state_list = ds_opponent_state_list.reshape(len(ds_opponent_state_list), 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #state
-        ds_own_point_list = ds_own_point_list.reshape(len(ds_own_point_list), 1, 1, 1)   #point
-        ds_opponent_point_list = ds_opponent_point_list.reshape(len(ds_opponent_point_list), 1, 1, 1)   #point
-        ds_a1_pos_list = ds_a1_pos_list.reshape(len(ds_a1_pos_list), 1, 1, 1)   #agent pos
-        ds_a2_pos_list = ds_a2_pos_list.reshape(len(ds_a2_pos_list), 1, 1, 1)   #agent pos
-        ds_a1_best_move_list = ds_a1_best_move_list.reshape(len(ds_a1_best_move_list), 1, 1, 1)   #best move
-        ds_a2_best_move_list = ds_a2_best_move_list.reshape(len(ds_a2_best_move_list), 1, 1, 1)   #best move
-        ds_won_list = ds_won_list.reshape(len(ds_won_list), 1, 1, 1)   #won
+        ds_value_list = ds_value_list.reshape(len(ds_value_list), game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #value
+        ds_own_state_list = ds_own_state_list.reshape(len(ds_own_state_list), game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #state
+        ds_opponent_state_list = ds_opponent_state_list.reshape(len(ds_opponent_state_list), game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #state
+        ds_own_point_list = ds_own_point_list.reshape(len(ds_own_point_list), 1, 1)   #point
+        ds_opponent_point_list = ds_opponent_point_list.reshape(len(ds_opponent_point_list), 1, 1)   #point
+        ds_a1_pos_list = ds_a1_pos_list.reshape(len(ds_a1_pos_list), game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #agent pos
+        ds_a2_pos_list = ds_a2_pos_list.reshape(len(ds_a2_pos_list), game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)   #agent pos
+        ds_a1_best_move_list = ds_a1_best_move_list.reshape(len(ds_a1_best_move_list))   #best move
+        ds_a2_best_move_list = ds_a2_best_move_list.reshape(len(ds_a2_best_move_list))   #best move
+        ds_won_list = ds_won_list.reshape(len(ds_won_list), 1, 1)   #won
 
         a1_train_np = []    #入力データのリスト
         a2_train_np = []
@@ -101,8 +101,13 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         for ds_value, ds_own_state, ds_opponent_state, ds_a2_pos in zip(ds_value_list, ds_own_state_list, ds_opponent_state_list, ds_a2_pos_list):
             a2_train_np.append(np.array([ds_value, ds_own_state, ds_opponent_state, ds_a2_pos]))
 
+        a1_train_np = np.array(a1_train_np)
+        a2_train_np = np.array(a2_train_np)
+
         a1_target_np = np.array(ds_a1_best_move_list)
         a2_target_np = np.array(ds_a2_best_move_list)
+        print(a1_train_np.shape)
+        print(a1_target_np.shape)
 
         train_1 = torch.utils.data.TensorDataset(torch.from_numpy(a1_train_np).float(), torch.from_numpy(a1_target_np).long())
         train_2 = torch.utils.data.TensorDataset(torch.from_numpy(a2_train_np).float(), torch.from_numpy(a2_target_np).long())

@@ -116,6 +116,10 @@ for i in range(1, RECORD_NUM+1):
 
                 #その時点で最も点を得点を得られる手を探索
                 best_move = field.best_move(field.own_state, field.opponent_state, turn)
+                best_move = field.conv_hand_direction(turn, best_move)  #移動方向を表す数値に変換
+                if DEBUG is True:
+                    print("best move direction", best_move)
+                if best_move is None: best_move = 0 #Noneだったら、とりあえず停留する
                 if field.check_team(turn) == game.OWN:
                     if turn == game.OWN_1:
                         a1_best_moves.append(best_move)

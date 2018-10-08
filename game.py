@@ -305,7 +305,7 @@ class field:
 
         return pos_field
 
-    def best_move(self, own_state, opponent_state, player): #その時点で最も点を得られる手を方向で出力
+    def best_move(self, own_state, opponent_state, player): #その時点で最も点を得られる手を出力
         move_point = {} #手とその時の得点を管理する辞書
         hands = self.hands(own_state, opponent_state, player) #可能な手を全てリストアップ
 
@@ -322,7 +322,7 @@ class field:
                 move_point[tuple(hand[0].items())] = self.point(my_opponent_state)
 
         max_sorted = sorted(move_point.items(), key=lambda x: x[1], reverse=True) #リストに変換して得点の降順にソート
-        return dict(max_sorted[0][0]) #得られる得点が最大の手 辞書型に変換済み
+        return [dict(max_sorted[0][0]), max_sorted[0][1]] #得られる得点が最大の手 辞書型に変換済み
 
     def conv_hand_direction(self, turn, hand):    #エージェントの位置と手から、移動方向を番号で表す
         agent_x = self.conv_turn_pos(turn)['x'] #座標に変換
@@ -352,6 +352,10 @@ class field:
             return 7
         elif dis_x == -1 and dis_y == -1:   #左上
             return 8
+        else:                               #異常値
+            if DEBUG is True:
+                print("bad hand")
+            return None
 
 
 '''
