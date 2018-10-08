@@ -73,8 +73,9 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         ds_opponent_point_list = dataset[4]
         ds_a1_pos_list         = dataset[5]
         ds_a2_pos_list         = dataset[6]
-        ds_best_move_list      = dataset[7]
-        ds_won_list            = dataset[8]
+        ds_a1_best_move_list      = dataset[7]
+        ds_a2_best_move_list      = dataset[8]
+        ds_won_list            = dataset[9]
 
         # train_np = np.r_[dataset[0], dataset[1], dataset[2]]    #入力データを結合し、一つの配列にする
         target_np = np.copy(dataset[3])
@@ -90,7 +91,8 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         ds_opponent_point_list = ds_opponent_point_list.reshape(len(ds_opponent_point_list), 1, 1, 1)   #point
         ds_a1_pos_list = ds_a1_pos_list.reshape(len(ds_a1_pos_list), 1, 1, 1)   #agent pos
         ds_a2_pos_list = ds_a2_pos_list.reshape(len(ds_a2_pos_list), 1, 1, 1)   #agent pos
-        ds_best_move_list = ds_best_move_list.reshape(len(ds_best_move_list), 1, 1, 1)   #best move
+        ds_a1_best_move_list = ds_a1_best_move_list.reshape(len(ds_a1_best_move_list), 1, 1, 1)   #best move
+        ds_a2_best_move_list = ds_a2_best_move_list.reshape(len(ds_a2_best_move_list), 1, 1, 1)   #best move
         ds_won_list = ds_won_list.reshape(len(ds_won_list), 1, 1, 1)   #won
 
         train_1 = torch.utils.data.TensorDataset( \
@@ -100,7 +102,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
             # torch.from_numpy(ds_own_point_list).float(), \
             # torch.from_numpy(ds_opponent_point_list).float(), \
             torch.from_numpy(ds_a1_pos_list).float()
-            # torch.from_numpy(ds_best_move_list).float()
+            # torch.from_numpy(ds_a1_best_move_list).float()
             )
 
         train_2 = torch.utils.data.TensorDataset( \
@@ -110,7 +112,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
             # torch.from_numpy(ds_own_point_list).float(), \
             # torch.from_numpy(ds_opponent_point_list).float(), \
             torch.from_numpy(ds_a2_pos_list).float()
-            # torch.from_numpy(ds_best_move_list).float()
+            # torch.from_numpy(ds_a2_best_move_list).float()
         )
 
         train_loader_1 = torch.utils.data.DataLoader(train_1, batch_size=BATCH_GAME_SIZE, shuffle=True)

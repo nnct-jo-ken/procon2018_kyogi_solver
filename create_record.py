@@ -26,7 +26,7 @@ players = {
 #     game.OPPONENT_2: player.RandomMTS(100, 5)
 # }
 
-def save_record(field, best_moves, won):
+def save_record(field, a1_best_moves, a2_best_moves, won):
     if DEBUG is True: return    #デバッグ時はファイル生成をしない
     
     X_value = np.array(field.value).reshape([field.width, field.height])
@@ -36,7 +36,8 @@ def save_record(field, best_moves, won):
     X_opponent_points = np.array(field.opponent_points)
     X_a1_poss = np.array(field.a1_poss).reshape([-1, field.width, field.height])
     X_a2_poss = np.array(field.a2_poss).reshape([-1, field.width, field.height])
-    X_best_moves = np.array(best_moves)
+    X_a1_best_moves = np.array(a1_best_moves)
+    X_a2_best_moves = np.array(a2_best_moves)
 
     now = int(round(time.time()*1000))
     path = os.path.join(OUTPUT_DIR, "{0}.npz".format(now))  #ファイル名の指定
@@ -49,7 +50,8 @@ def save_record(field, best_moves, won):
              X_opponent_points=X_opponent_points,
              X_a1_poss=X_a1_poss,
              X_a2_poss=X_a2_poss,
-             X_best_moves=X_best_moves,
+             X_a1_best_moves=X_a1_best_moves,
+             X_a2_best_moves=X_a2_best_moves,
              won=won)
 
     try:    #きちんと読み込めるか確認
@@ -65,11 +67,13 @@ def save_record(field, best_moves, won):
         print("opponent points\n{}".format(len(X_opponent_points)))
         print("a1 positions\n{}".format(len(X_a1_poss)))
         print("a2 positions\n{}".format(len(X_a2_poss)))
-        print("best moves\n{}".format(len(X_best_moves)))
+        print("a1 best moves\n{}".format(len(X_a1_best_moves)))
+        print("a2 best moves\n{}".format(len(X_a2_best_moves)))
         print("won\n{}".format(won))
 
 player = (game.OWN_1, game.OWN_2, game.OPPONENT_1, game.OPPONENT_2) #エージェント識別用タプル（リストの変更できないヴァージョン）
-best_moves = [] #各局面における得点が最高になる手
+a1_best_moves = [] #各局面における得点が最高になる手
+a2_best_moves = []
 
 for i in range(1, RECORD_NUM+1):
     print("game:", i, end='\r')
@@ -83,7 +87,7 @@ for i in range(1, RECORD_NUM+1):
 
         #フィールドの状態を確認（デバッグ用）
         if DEBUG is True:
-            time.sleep(0)
+            time.sleep(1)
             print() #一行空ける
             print("turn: {0}".format(j))
             # field.print_field()
@@ -112,7 +116,11 @@ for i in range(1, RECORD_NUM+1):
 
                 #その時点で最も点を得点を得られる手を探索
                 best_move = field.best_move(field.own_state, field.opponent_state, turn)
-                best_moves.append(best_move)
+                if field.check_team(turn) == game.OWN:
+                    if turn == game.OWN_1:
+                        a1_best_moves.append(best_move)
+                    if turn == game.OWN_2:
+                        a2_best_moves.append(best_move)
 
                 if DEBUG is True:
                     print("best move:", best_move)
@@ -136,7 +144,7 @@ for i in range(1, RECORD_NUM+1):
     field.own_status.append(field.own_state)
     field.opponent_status.append(field.opponent_state)
 
-    save_record(field, best_moves, won)  #対局データの保存
+    save_record(field, a1_best_moves, a2_best_moves, won)  #対局データの保存
     if DEBUG is True:
         print()
         # print("field.own_status")
@@ -147,9 +155,11 @@ for i in range(1, RECORD_NUM+1):
         print("opponent status len:", len(field.opponent_status))
         print("own points len", len(field.own_points))
         print("opponent points len", len(field.opponent_points))
-        print("best moves len", len(best_moves))
+        print("a1 best moves len", len(a1_best_moves))
+        print("a2 best moves len", len(a2_best_moves))
         print("a1 poss len", len(field.a1_poss))
         print("a2 poss len", len(field.a2_poss))
+        print()
 
 
 print("created {} records".format(RECORD_NUM))
