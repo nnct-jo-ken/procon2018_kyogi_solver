@@ -6,7 +6,7 @@ import numpy as np
 import game
 import player
 
-DEBUG = False    #デバッグ時はTrue
+DEBUG = True    #デバッグ時はTrue
 
 RECORD_NUM = 1000  #対局データ作成数
 TURN = 60   #1試合あたりのターン数
@@ -83,7 +83,7 @@ for i in range(1, RECORD_NUM+1):
 
         #フィールドの状態を確認（デバッグ用）
         if DEBUG is True:
-            time.sleep(1)
+            time.sleep(0)
             print() #一行空ける
             print("turn: {0}".format(j))
             # field.print_field()
@@ -107,20 +107,24 @@ for i in range(1, RECORD_NUM+1):
 
                 if field.check_team(turn) == game.OWN:
                     field.own_state = copy.deepcopy(field.move(field.own_state, turn, hand))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
-                    field.own_points.append(field.point(field.own_state))   #得点計算
                 elif field.check_team(turn) == game.OPPONENT:
                     field.opponent_state = copy.deepcopy(field.move(field.opponent_state, turn, hand))
-                    field.opponent_points.append(field.point(field.opponent_state)) #得点計算
 
                 #その時点で最も点を得点を得られる手を探索
                 best_move = field.best_move(field.own_state, field.opponent_state, turn)
                 best_moves.append(best_move)
+
+                if DEBUG is True:
+                    print("best move:", best_move)
 
         '''
         自陣のエージェント二人の行動が終わった後に、own_stateの更新でいいかも。
         そうしないと、エージェントの位置と陣形で蓄積している局面数が合わない
         opponent_stateも、敵陣について同様。
         '''
+        field.own_points.append(field.point(field.own_state))   #得点計算
+        field.opponent_points.append(field.point(field.opponent_state)) #得点計算
+
 
     w = field.judge(field.own_state, field.opponent_state)      #勝者
     if w == game.OWN:   #勝ち1 負け0に対応させる
@@ -135,12 +139,17 @@ for i in range(1, RECORD_NUM+1):
     save_record(field, best_moves, won)  #対局データの保存
     if DEBUG is True:
         print()
-        print("field.own_status")
-        print(field.own_status)
-        print("field.opponent_status")
-        print(field.opponent_status)
+        # print("field.own_status")
+        # print(field.own_status)
+        # print("field.opponent_status")
+        # print(field.opponent_status)
         print("own status len:", len(field.own_status))
         print("opponent status len:", len(field.opponent_status))
-        print("best move:", best_move)
+        print("own points len", len(field.own_points))
+        print("opponent points len", len(field.opponent_points))
+        print("best moves len", len(best_moves))
+        print("a1 poss len", len(field.a1_poss))
+        print("a2 poss len", len(field.a2_poss))
+
 
 print("created {} records".format(RECORD_NUM))
