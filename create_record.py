@@ -76,7 +76,10 @@ a1_best_moves = [] #各局面における得点が最高になる手
 a2_best_moves = []
 
 for i in range(1, RECORD_NUM+1):
-    print("game:", i, end='\r')
+    if i % 50 == 0:
+        print("game:", i)
+    else:
+        print("game:", i, end='\r')
 
     field = game.field()        #フィールド作成
     field.clear()   #フィールド情報をクリア
