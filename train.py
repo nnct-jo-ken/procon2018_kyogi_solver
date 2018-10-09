@@ -14,6 +14,8 @@ import train_data_creator
 import game
 import evaluate
 
+TURN = 60
+
 LR = 0.001   #学習率(learning rate)
 BATCH_GAME_SIZE = 5 #一度に学習する試合数
 EPOCH = 50 #1つの訓練データを何回学習させるか
@@ -106,14 +108,12 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
 
         a1_target_np = np.array(ds_a1_best_move_list)
         a2_target_np = np.array(ds_a2_best_move_list)
-        print(a1_train_np.shape)
-        print(a1_target_np.shape)
 
         train_1 = torch.utils.data.TensorDataset(torch.from_numpy(a1_train_np).float(), torch.from_numpy(a1_target_np).long())
         train_2 = torch.utils.data.TensorDataset(torch.from_numpy(a2_train_np).float(), torch.from_numpy(a2_target_np).long())
 
-        train_loader_1 = torch.utils.data.DataLoader(train_1, batch_size=BATCH_GAME_SIZE, shuffle=True)
-        train_loader_2 = torch.utils.data.DataLoader(train_2, batch_size=BATCH_GAME_SIZE, shuffle=True)
+        train_loader_1 = torch.utils.data.DataLoader(train_1, batch_size=BATCH_GAME_SIZE*TURN, shuffle=True)
+        train_loader_2 = torch.utils.data.DataLoader(train_2, batch_size=BATCH_GAME_SIZE*TURN, shuffle=True)
 
         total_loss = 0
         for i, data in enumerate(train_loader_1):
@@ -126,10 +126,6 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
                 inputs, labels = torch.autograd.Variable(inputs), torch.autograd.Variable(labels)
             optimizer.zero_grad()
             out = model(inputs)
-
-            # print(x.shape)
-            # print(y.shape)
-            # print(t.shape)
 
             loss = criterion(out, labels)
             total_loss += loss.item()

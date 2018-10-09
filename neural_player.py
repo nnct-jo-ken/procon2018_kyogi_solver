@@ -14,47 +14,35 @@ class DQNPlayer(player.Player):
             self.model.cuda()
 
     def select(self, field, player):
-        states = [] #playerが移動可能な位置に移動した状態をリストに突っ込む
-        eva_val = []    #推論した評価値 statesに対応している
+        value = field.value
+        own_state = field.own_state
+        opponent_state = field.opponent_state
+        pos = field.conv_agent_field([field.conv_turn_pos(player)['x'], field.conv_turn_pos(player)['y']])
 
-        hands = field.hands(field.own_state, field.opponent_state, player)  #可能な手
-        if len(hands) == 0: #手がない
-            return None
+        #大きさをフィールドの最大値に固定
+        value = np.pad(value, [(0, game.MAX_BOARD_SIZE - field.value.shape[0]),(0, game.MAX_BOARD_SIZE - field.value.shape[1])], 'constant')
+        own_state = np.pad(own_state, [(0, game.MAX_BOARD_SIZE - field.value.shape[0]),(0, game.MAX_BOARD_SIZE - field.value.shape[1])], 'constant')
+        opponent_state = np.pad(opponent_state, [(0, game.MAX_BOARD_SIZE - field.value.shape[0]),(0, game.MAX_BOARD_SIZE - field.value.shape[1])], 'constant')
+        pos = np.pad(pos, [(0, game.MAX_BOARD_SIZE - field.value.shape[0]),(0, game.MAX_BOARD_SIZE - field.value.shape[1])], 'constant')
 
-        for hand in hands:  #着手可能な手を網羅
-            # 実際に移動させたくないから、移動前の状態を記憶する
-            x = field.conv_turn_pos(player)['x']
-            y = field.conv_turn_pos(player)['y']
-            state = copy.deepcopy(field.state)
+        inputs = np.array([value, own_state, opponent_state, pos]).reshape(1, 4, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE)  #入力データを結合させる　サイズは[バッチ, チャンネル, height, width]
 
-            states.append(field.move(field.state, player, hand))
+        self.model.eval()   #推論モード
+        inputs = torch.from_numpy(inputs).float()
+        if torch.cuda.is_available(): #GPUを使える時
+            inputs = torch.autograd.Variable(inputs.cuda())
+        else:
+            inputs = torch.autograd.Variable(inputs)
 
-            field.conv_turn_pos(player)['x'] = x
-            field.conv_turn_pos(player)['y'] = y
-            field.state = copy.deepcopy(state)
+        out = self.model(inputs)
+        max_sorted = torch.sort(out, descending=True)   #価値が高い順に並べる
+        sorted_directions = max_sorted[1][0].tolist()   #移動方向のみのリストを生成
 
-        value_pad = np.pad(field.value, [(0, game.MAX_BOARD_SIZE - field.value.shape[0]),(0, game.MAX_BOARD_SIZE - field.value.shape[1])], 'constant')  #大きさをフィールドの最大値に固定
-        value_pad = torch.from_numpy(value_pad) #Tensorに変換
-        value_pad = value_pad.reshape(1, 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE).float()   #モデルの入力に合わせる
+        for move_direction in sorted_directions:
+            hand = field.conv_direction_hand(move_direction, own_state, opponent_state, [field.conv_turn_pos(player)['x'], field.conv_turn_pos(player)['y']])
+            if hand is None: continue   #不可能な手だったら、次点の手について処理する
 
-        for state in states:    #移動可能な位置に移動した状態について、評価値を推論
-            #大きさをフィールドの最大値に固定
-            state_pad = np.pad(state, [(0, game.MAX_BOARD_SIZE - state.shape[0]),(0, game.MAX_BOARD_SIZE - state.shape[1])], 'constant')
-            state_pad = torch.from_numpy(state_pad) #Tensorに変換
-            state_pad = state_pad.reshape(1, 1, game.MAX_BOARD_SIZE, game.MAX_BOARD_SIZE).float()   #モデルの入力に合わせる
-            if torch.cuda.is_available(): #GPUを使えるとき
-                value_pad = torch.autograd.Variable(value_pad.cuda())
-                state_pad = torch.autograd.Variable(state_pad.cuda())
-                player = torch.Tensor([player]).cuda()
-            else:
-                value_pad = torch.autograd.Variable(value_pad)
-                state_pad = torch.autograd.Variable(state_pad)
-                player = torch.Tensor([player])
-            eva_val.append(self.model(value_pad, state_pad, player))
-
-        max_eva_val_index = eva_val.index(max(eva_val)) #評価値のリストのうち、最初に表れた最大値のインデックス
-
-        return hands[max_eva_val_index] #推論した評価値が最も高い移動先（orひっくり返し）を返す
+            return hand
 
 # class MinimaxDQNPlayer(player.Player):
 #     def __init__(self, model):

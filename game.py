@@ -357,6 +357,63 @@ class field:
                 print("bad hand")
             return None
 
+    def conv_direction_hand(self, direction, own_state, opponent_state, agent_pos):
+        '''
+        移動方向の番号から、その方向に対して可能な手を抽出
+        1つなら、そのまま返す
+        複数なら、自陣ならひっくり返しではなく移動を選ぶ
+        '''
+        hands = []  #着手可能な手
+
+        x = agent_pos[0]
+        y = agent_pos[1]
+
+        if direction == 0:      #停留
+            dis_x = 0
+            dis_y = 0
+        elif direction == 1:    #上
+            dis_x = -1
+            dis_y = 0
+        elif direction == 2:    #右上
+            dis_x = -1
+            dis_y = 1
+        elif direction == 3:    #右
+            dis_x = 0
+            dis_y = 1
+        elif direction == 4:    #右下
+            dis_x = 1
+            dis_y = 1
+        elif direction == 5:    #下
+            dis_x = 1
+            dis_y = 0
+        elif direction == 6:    #左下
+            dis_x = 1
+            dis_y = -1
+        elif direction == 7:    #左
+            dis_x = 0
+            dis_y = -1
+        elif direction == 8:    #左上
+            dis_x = -1
+            dis_y = -1
+
+        target_x = x + dis_x
+        target_y = y + dis_y
+
+        if self.can_move_pos([target_x, target_y]) is False: #範囲内か確認
+            return None
+        elif self.player_exist([target_x, target_y]) is True: #すでにプレーヤーがいる
+            return None
+        elif own_state[target_x][target_y] == EMPTY and opponent_state[target_x][target_y] == EMPTY:    #空
+            hands.append([{'x': target_x, 'y':target_y}, False])    #目的の位置に移動
+        elif own_state[target_x][target_y] == EMPTY and opponent_state[target_x][target_y] == EXISTENCE:    #敵の陣地
+            hands.append([{'x': target_x, 'y':target_y}, True])    #除去
+        elif own_state[target_x][target_y] == EXISTENCE and opponent_state[target_x][target_y] == EMPTY:    #味方の陣地
+            hands.append([{'x': target_x, 'y':target_y}, False])    #移動
+            hands.append([{'x': target_x, 'y':target_y}, True])    #除去 もはや入れる必要はないが、一応
+        else:   #異常値
+            return None
+
+        return hands[0]
 
 '''
 # for check

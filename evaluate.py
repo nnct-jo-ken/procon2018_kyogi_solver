@@ -41,7 +41,7 @@ def play(target, opponent, play_num):
         field.clear()   #フィールド情報をクリア
         field.create_rand_field()   #乱数で初期化
 
-        for game in range(TURN):    #1試合あたり{TURN}ターンで打ち切る
+        for _ in range(TURN):    #1試合あたり{TURN}ターンで打ち切る
 
             for turn in player: #各エージェントごとに行動させる
                 hand = players[turn].select(field, turn)
