@@ -132,7 +132,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
             loss.backward()
             optimizer.step()
 
-            if i % 10 == 0:    #学習10回ごとにロスの平均を表示 ミニバッチが変わるごとにリセット
+            if i % 100 == 0:    #学習100回ごとにロスの平均を表示 ミニバッチが変わるごとにリセット
                 print("[epoch:{0} minibatch:{1} aspect:{2}] loss: {3}".format(epoch, record_index//BATCH_GAME_SIZE+1, i, total_loss / 10))    #最初に表示されるlossは、本来の1/10
                 total_loss = 0.0
             
