@@ -20,6 +20,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket1:
         socket1.send(b'end')
         state = socket1.recv(512)
 
+        print("value\n", value)
+        print("state\n", state)
+
         value_lines = value.split(b':')
         for value_line in value_lines:
             nums = value_line.split(b' ')
@@ -44,4 +47,3 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket1:
         buffer = solver.solve(field)
         print(buffer)
         socket1.send(buffer.encode('utf-8'))
-        socket1.recv(8)
