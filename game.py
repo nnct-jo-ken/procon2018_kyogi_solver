@@ -5,7 +5,7 @@ import random
 import copy
 import load_field_file
 
-DEBUG = False    #デバッグ時はTrue
+DEBUG = True    #デバッグ時はTrue
 
 OWN = 3         #自チーム
 OPPONENT = -3   #敵チーム
@@ -354,7 +354,7 @@ class field:
             return 8
         else:                               #異常値
             if DEBUG is True:
-                print("bad hand")
+                print("conv hand to bad direction")
             return None
 
     def conv_direction_hand(self, direction, own_state, opponent_state, agent_pos):
@@ -411,6 +411,8 @@ class field:
             hands.append([{'x': target_x, 'y':target_y}, False])    #移動
             hands.append([{'x': target_x, 'y':target_y}, True])    #除去 もはや入れる必要はないが、一応
         else:   #異常値
+            if DEBUG is True:
+                print("conv direction to bad hand")
             return None
 
         return hands[0]

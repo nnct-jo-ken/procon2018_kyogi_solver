@@ -4,7 +4,7 @@ import socket
 import game
 import solver
 
-DEBUG = True
+DEBUG = False
 
 field = game.field()        #フィールド作成
 field.clear()   #フィールド情報をクリア

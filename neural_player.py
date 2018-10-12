@@ -6,6 +6,8 @@ import torch
 import game
 import player
 
+DEBUG = True
+
 class DQNPlayer(player.Player):
     def __init__(self, model):
         super().__init__()  #親クラスのコンストラクタ
@@ -40,6 +42,8 @@ class DQNPlayer(player.Player):
 
         for move_direction in sorted_directions:
             hand = field.conv_direction_hand(move_direction, own_state, opponent_state, [field.conv_turn_pos(player)['x'], field.conv_turn_pos(player)['y']])
+            if DEBUG is True:
+                print("dict : ", move_direction, "hand : ", hand)
             if hand is None: continue   #不可能な手だったら、次点の手について処理する
 
             return hand
