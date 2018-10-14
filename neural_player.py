@@ -6,7 +6,7 @@ import torch
 import game
 import player
 
-DEBUG = True
+DEBUG = False
 
 class DQNPlayer(player.Player):
     def __init__(self, model):

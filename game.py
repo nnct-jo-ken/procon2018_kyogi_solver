@@ -5,7 +5,7 @@ import random
 import copy
 import load_field_file
 
-DEBUG = True    #デバッグ時はTrue
+DEBUG = False    #デバッグ時はTrue
 
 OWN = 3         #自チーム
 OPPONENT = -3   #敵チーム
