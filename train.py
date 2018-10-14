@@ -198,7 +198,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
 
             if (record_index+i)%50 == 0:    #ロスの平均を表示 iは0のままだから、50試合分を処理するごとにロスを表示
                 print("[epoch:{0} minibatch:{1} aspect:{2}]".format(epoch, record_index//BATCH_GAME_SIZE+1, i))
-                print("loss", total_loss / 10)  #最初に表示されるlossは、本来の1/10
+                print("loss", total_loss)
 
                 test_loss = test(model)
                 print("test_loss", test_loss)
