@@ -6,7 +6,7 @@ import torch
 import game
 import player
 
-DEBUG = False
+DEBUG = True
 
 class DQNPlayer(player.Player):
     def __init__(self, model):
@@ -37,6 +37,8 @@ class DQNPlayer(player.Player):
             inputs = torch.autograd.Variable(inputs)
 
         out = self.model(inputs)
+        if DEBUG is True:
+            print(out)
         max_sorted = torch.sort(out, descending=True)   #価値が高い順に並べる
         sorted_directions = max_sorted[1][0].tolist()   #移動方向のみのリストを生成
 
