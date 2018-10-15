@@ -178,6 +178,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
         train_loader_2 = torch.utils.data.DataLoader(train_2, batch_size=BATCH_GAME_SIZE*TURN, shuffle=True)
 
         total_loss = 0
+        #エージェント1
         for i, data in enumerate(train_loader_1):
             '''
             読み込んでいる数とミニバッチのサイズが同じだから、ここは1回しか実行されない
@@ -220,6 +221,51 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
                     torch.save(model.state_dict(), BEST_MODEL_PATH)  #ベストモデルの保存
                 else:
                     print("{0} <= {1}".format(ratio, max_win_ratio))
+
+        #エージェント2
+        for i, data in enumerate(train_loader_2):
+            '''
+            読み込んでいる数とミニバッチのサイズが同じだから、ここは1回しか実行されない
+            '''
+            inputs, labels = data
+
+            model.train()   #訓練モード
+            if torch.cuda.is_available(): #GPUを使える時
+                inputs, labels = torch.autograd.Variable(inputs.cuda()), torch.autograd.Variable(labels.cuda())
+            else:
+                inputs, labels = torch.autograd.Variable(inputs), torch.autograd.Variable(labels)
+            optimizer.zero_grad()
+            out = model(inputs)
+
+            loss = criterion(out, labels)
+            total_loss += loss.item()
+            loss.backward()
+            optimizer.step()
+
+            if (record_index+i)%50 == 0:    #ロスの平均を表示 iは0のままだから、50試合分を処理するごとにロスを表示
+                print("[epoch:{0} minibatch:{1} aspect:{2}]".format(epoch, record_index//BATCH_GAME_SIZE, i))
+                print("loss", total_loss)
+
+                test_loss = test(model)
+                print("test_loss", test_loss)
+                total_loss = 0.0
+
+            # print("x:{0} t:{1} y:{2} loss:{3}".format(x, t, y, loss))
+
+            torch.save(model.state_dict(), MODEL_PATH)  #モデルの保存
+
+            model.eval()    #評価モード
+            if (record_index+i)%50 == 0:   #学習50回ごとにモデルが最善か確認
+                ratio = evaluate.evaluate_model(model, 10)  #勝率
+                print("played {} games for evaluating".format(10))
+                print("win ratio:{}".format(ratio))
+                if max_win_ratio <= ratio:  #勝率が今までの最高値より高い
+                    print("max update:{0} >= {1}".format(ratio, max_win_ratio))
+                    max_win_ratio = ratio
+                    torch.save(model.state_dict(), BEST_MODEL_PATH)  #ベストモデルの保存
+                else:
+                    print("{0} <= {1}".format(ratio, max_win_ratio))
+
 
         record_index += BATCH_GAME_SIZE
 
