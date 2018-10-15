@@ -6,7 +6,7 @@ import copy
 import numpy as np
 import game
 
-DEBUG = True
+DEBUG = False
 
 TURN = 30   #探索するターン数 途中からだから、減らしている
 
