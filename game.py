@@ -401,8 +401,9 @@ class field:
 
         if self.can_move_pos([target_x, target_y]) is False: #範囲内か確認
             return None
-        elif self.player_exist([target_x, target_y]) is True: #すでにプレーヤーがいる
-            return None
+        elif direction != 0:    #停留でないとき
+            if self.player_exist([target_x, target_y]) is True: #すでにプレーヤーがいる
+                return None
         elif own_state[target_x][target_y] == EMPTY and opponent_state[target_x][target_y] == EMPTY:    #空
             hands.append([{'x': target_x, 'y':target_y}, False])    #目的の位置に移動
         elif own_state[target_x][target_y] == EMPTY and opponent_state[target_x][target_y] == EXISTENCE:    #敵の陣地
