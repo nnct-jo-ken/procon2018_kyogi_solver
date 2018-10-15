@@ -120,7 +120,8 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
     record_index = 0    #読み出す試合データの最初のインデックス
 
     while True: #全学習データを扱う
-        print("epoch:{0} record:{1}".format(epoch, record_index))
+        if not torch.cuda.is_available(): #GPUを使えない　Colaboratoryにおける大量表示によるブラウザの不安定化対策
+            print("epoch:{0} record:{1}".format(epoch, record_index))
 
         #バッチサイズ分の訓練データと正解ラベルを取得
         #datasetは、[X_value, X_own_status, X_opponent_status, X_own_points, X_opponent_points, X_a1_poss, X_a2_poss, won]
