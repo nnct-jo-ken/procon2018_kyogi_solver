@@ -137,8 +137,19 @@ for i in range(1, RECORD_NUM+1):
         そうしないと、エージェントの位置と陣形で蓄積している局面数が合わない
         opponent_stateも、敵陣について同様。
         '''
-        field.own_points.append(field.point(field.own_state))   #得点計算
-        field.opponent_points.append(field.point(field.opponent_state)) #得点計算
+        now_point = field.point(field.own_state)    #得点計算
+        if len(field.own_points) != 0:
+            dist_point = now_point - field.own_points[-1]
+        else:
+            dist_point = now_point
+        field.own_points.append(dist_point)
+
+        now_point = field.point(field.opponent_state)   #得点計算
+        if len(field.opponent_points) != 0:
+            dist_point = now_point - field.opponent_points[-1]
+        else:
+            dist_point = now_point
+        field.opponent_points.append(dist_point)
 
 
     w = field.judge(field.own_state, field.opponent_state)      #勝者
