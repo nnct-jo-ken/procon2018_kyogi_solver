@@ -64,20 +64,10 @@ def play(target, opponent, play_num):
                     #移動させる
                     if field.check_team(turn) == game.OWN:
                         field.own_state = copy.deepcopy(field.move(field.own_state, turn, hand))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
-                        now_point = field.point(field.own_state)    #得点計算
-                        if len(field.own_points) != 0:
-                            dist_point = now_point - field.own_points[-1]
-                        else:
-                            dist_point = now_point
-                        field.own_points.append(dist_point)
+                        field.own_points.append(field.point(field.own_state))   #得点計算
                     elif field.check_team(turn) == game.OPPONENT:
                         field.opponent_state = copy.deepcopy(field.move(field.opponent_state, turn, hand))
-                        now_point = field.point(field.opponent_state)   #得点計算
-                        if len(field.opponent_points) != 0:
-                            dist_point = now_point - field.opponent_points[-1]
-                        else:
-                            dist_point = now_point
-                        field.opponent_points.append(dist_point)
+                        field.opponent_points.append(field.point(field.opponent_state)) #得点計算
 
         won = field.judge(field.own_state, field.opponent_state)      #勝者
         if won == game.OWN: wons += 1   #自陣の勝ちなら、勝ち数を1つ増やす
