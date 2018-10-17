@@ -113,9 +113,9 @@ for i in range(1, RECORD_NUM+1):
                         field.a2_poss.append(field.conv_agent_field([field.own_a2['x'], field.own_a2['y']]))
 
                 if field.check_team(turn) == game.OWN:
-                    field.own_state = copy.deepcopy(field.move(field.own_state, turn, hand))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
+                    field.own_state = copy.deepcopy(field.move(field.own_state, turn, hand, True))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
                 elif field.check_team(turn) == game.OPPONENT:
-                    field.opponent_state = copy.deepcopy(field.move(field.opponent_state, turn, hand))
+                    field.opponent_state = copy.deepcopy(field.move(field.opponent_state, turn, hand, True))
 
                 #その時点で最も点を得点を得られる手を探索
                 best_move = field.best_move(field.own_state, field.opponent_state, turn)
