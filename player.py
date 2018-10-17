@@ -82,7 +82,7 @@ class RandomMTS(Player):    #モンテカルロ木探索
         #     if len(hands) > 0:
         #         choice = random.randrange(len(hands))
         #         hand = hands[choice]
-        #         field.state = field.move(field.state, player, hand)
+        #         field.state = field.move(field.state, player, hand, True)
         #         pass_count = 0
         #     else:
         #         pass_count += 1
@@ -101,7 +101,7 @@ class RandomMTS(Player):    #モンテカルロ木探索
             if DEBUG is True:
                 print(hand) #この部分の処理が行われるタイミングを確認
             if hand is not None:    #次の手があれば
-                field.state = copy.deepcopy(field.move(field.state, player, hand))    #deepcopyしないと参照渡しみたいになる
+                field.state = field.move(field.state, player, hand, False)
             player = next_players[player]   #次のプレーヤーにする
 
         for _ in range(TURN):   #ターン数まで繰り返す   _はカウンタ変数を使わないという意味
@@ -110,7 +110,7 @@ class RandomMTS(Player):    #モンテカルロ木探索
             for turn in players: #各エージェントごとに行動させる
                 hand = players[player].select(field, turn)
                 if hand is not None:    #次の手があれば
-                    field.state = copy.deepcopy(field.move(field.state, turn, hand))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
+                    field.state = field.move(field.state, turn, hand, False)
 
         return field.judge(field.state)      #勝者
 
@@ -143,7 +143,7 @@ class MTSNode:
         if move is None:
             child = MTSNode(self, self.field, next_players[self.player], self.max_depth-1, None) #パスして、次のプレーヤーにする
         else:
-            self.field.state = copy.deepcopy(self.field.move(self.field.state, self.player, move)) #着手させる
+            self.field.state = self.field.move(self.field.state, self.player, move, True) #着手させる
             child = MTSNode(self, self.field, next_players[self.player], self.max_depth-1, move) #着手させた後の子ノードを代入
         self.children.append(child)
         print("child max_depth {}".format(child.max_depth))

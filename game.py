@@ -152,7 +152,7 @@ class field:
         if player is None:
             return field.can_move(self.own_a1) or field.can_move(self.own_a2) \
                     or field.can_move(self.opponent_a1) or field.can_move(self.opponent_a2) #誰かがTrueならTrue
-        
+
         for i in range(-1, 2):  #width -1から1
             for j in range(-1, 2):  #height -1から1
                 if self.can_move_pos([player['x'] + i, player['y'] + j]) is False:    #範囲外
@@ -196,17 +196,36 @@ class field:
         elif turn == OPPONENT_1: return self.opponent_a1
         elif turn == OPPONENT_2: return self.opponent_a2
 
-    def move(self, state, player, hand):   #handはリスト hand[0]は辞書
-        if self.can_move_pos([hand[0]['x'], hand[0]['y']]) is False: #範囲内か確認
-            raise Exception("Can't move!")
-        if hand[1] is False:    #移動なら
-            state[hand[0]['x']][hand[0]['y']] = EXISTENCE  #移動先にタイルを置く
-            self.conv_turn_pos(player)['x'] = hand[0]['x']  #エージェントの移動
-            self.conv_turn_pos(player)['y'] = hand[0]['y']
-        else:
-            state[hand[0]['x']][hand[0]['y']] = EMPTY   #タイルを除去
+    def move(self, state, player, hand, overwrite = False):   #handはリスト hand[0]は辞書 overwriteがFalseなら、破壊的操作をしない
+        hand_x = hand[0]['x']
+        hand_y = hand[0]['y']
+        player_x = self.conv_turn_pos(player)['x']
+        player_y = self.conv_turn_pos(player)['y']
 
-        return state
+        my_state = copy.deepcopy(state)
+
+        if self.can_move_pos([hand_x, hand_y]) is False: #範囲内か確認
+            raise Exception("Can't move!")
+        #停留なら、何もしない
+        if hand_x == player_x and hand_y == player_y:
+            return my_state
+        if hand[1] is False:    #移動なら
+            if overwrite is False:  #書き換えない
+                my_state[hand_x][hand_y] = EXISTENCE  #移動先にタイルを置く
+            if overwrite is True:   #実際に移動
+                state[hand_x][hand_y] = EXISTENCE  #移動先にタイルを置く
+                player_x = hand_x  #エージェントの移動
+                player_y = hand_y
+        else:
+            if overwrite is False:  #書き換えない
+                my_state[hand_x][hand_y] = EMPTY   #タイルを除去
+            else:   #書き換え
+                state[hand_x][hand_y] = EMPTY   #タイルを除去
+
+        if overwrite is False:  #書き換えない
+            return my_state
+        else:
+            return state
 
     def area_score(self, state):
         score = 0   #領域ポイント
@@ -315,10 +334,10 @@ class field:
             my_opponent_state = copy.deepcopy(opponent_state)
 
             if self.check_team(player) == OWN:
-                my_own_state = copy.deepcopy(self.move(my_own_state, player, hand))    #deepcopyしないと参照渡しみたいになって、ひとつ変えると全部変わる
+                my_own_state = self.move(my_own_state, player, hand, False)
                 move_point[tuple(hand[0].items())] = self.point(my_own_state) #得点計算
             elif self.check_team(player) == OPPONENT:
-                my_opponent_state = copy.deepcopy(self.move(my_opponent_state, player, hand))
+                my_opponent_state = self.move(my_opponent_state, player, hand, False)
                 move_point[tuple(hand[0].items())] = self.point(my_opponent_state)
 
         max_sorted = sorted(move_point.items(), key=lambda x: x[1], reverse=True) #リストに変換して得点の降順にソート
