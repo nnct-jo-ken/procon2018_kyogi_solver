@@ -9,7 +9,7 @@ import player
 DEBUG = False    #デバッグ時はTrue
 
 RECORD_NUM = 1000  #対局データ作成数
-TURN = 60   #1試合あたりのターン数
+TURN = 90   #1試合あたりのターン数
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "record")  #出力ディレクトリ
 os.makedirs(OUTPUT_DIR, exist_ok=True)  #出力ディレクトリの作成
 
@@ -131,6 +131,9 @@ for i in range(1, RECORD_NUM+1):
 
                 if DEBUG is True:
                     print("best move:", best_move)
+
+            if DEBUG is True:
+                field.print_field()
 
         '''
         自陣のエージェント二人の行動が終わった後に、own_stateの更新でいいかも。

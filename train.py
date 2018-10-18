@@ -14,7 +14,7 @@ import train_data_creator
 import game
 import evaluate
 
-TURN = 60
+TURN = 90
 
 LR = 0.0001   #学習率(learning rate)
 BATCH_GAME_SIZE = 5 #一度に学習する試合数
