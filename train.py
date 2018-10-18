@@ -16,7 +16,7 @@ import evaluate
 
 TURN = 60
 
-LR = 0.001   #学習率(learning rate)
+LR = 0.0001   #学習率(learning rate)
 BATCH_GAME_SIZE = 5 #一度に学習する試合数
 TEST_GAME_NUMBER = 3    #テスト時に使用する試合数
 EPOCH = 50 #1つの訓練データを何回学習させるか
