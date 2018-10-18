@@ -63,10 +63,10 @@ def play(target, opponent, play_num):
 
                     #移動させる
                     if field.check_team(turn) == game.OWN:
-                        field.own_state = field.move(field.own_state, turn, hand, False)
+                        field.own_state = field.move(field.own_state, turn, hand, True)
                         field.own_points.append(field.point(field.own_state))   #得点計算
                     elif field.check_team(turn) == game.OPPONENT:
-                        field.opponent_state = field.move(field.opponent_state, turn, hand, False)
+                        field.opponent_state = field.move(field.opponent_state, turn, hand, True)
                         field.opponent_points.append(field.point(field.opponent_state)) #得点計算
 
         won = field.judge(field.own_state, field.opponent_state)      #勝者
