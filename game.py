@@ -435,7 +435,6 @@ class field:
                 print("conv direction to bad hand")
             return None
 
-        print("hands", hands)
         return hands[0]
 
 '''
