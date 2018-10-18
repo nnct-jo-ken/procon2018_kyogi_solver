@@ -214,8 +214,8 @@ class field:
                 my_state[hand_x][hand_y] = EXISTENCE  #移動先にタイルを置く
             if overwrite is True:   #実際に移動
                 state[hand_x][hand_y] = EXISTENCE  #移動先にタイルを置く
-                player_x = hand_x  #エージェントの移動
-                player_y = hand_y
+                self.conv_turn_pos(player)['x'] = hand_x  #エージェントの移動
+                self.conv_turn_pos(player)['y'] = hand_y
         else:
             if overwrite is False:  #書き換えない
                 my_state[hand_x][hand_y] = EMPTY   #タイルを除去
