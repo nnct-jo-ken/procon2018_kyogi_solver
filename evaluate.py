@@ -1,13 +1,26 @@
 # coding: utf-8
 
+import os
 import copy
+import torch
 import game
 import player
+import network
 import neural_player
 
 DEBUG = False
+RANDOM_CREATE = False   #True:ランダムに着手 False:学習済みのモデルを使用
 
 TURN = 60
+
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "./output/best_model.pth")       #最善モデルの保存パス
+
+if RANDOM_CREATE is False:  #学習済みモデルを使用
+    if os.path.exists(MODEL_PATH):
+        model = network.Network()
+        model.load_state_dict(torch.load(MODEL_PATH, map_location=lambda storage, loc: storage))
+    else:
+        raise Exception("学習済みモデルがありません")
 
 def play(target, opponent, play_num):
     #入力
@@ -76,5 +89,8 @@ def play(target, opponent, play_num):
 
 def evaluate_model(model, play_num):
     target = neural_player.DQNPlayer(model)
-    opponent = player.RandomUniform()   #本当はランダム打ちのモンテカルロ木探索にしたい
+    if RANDOM_CREATE is False:
+        opponent =  neural_player.DQNPlayer(model)
+    elif RANDOM_CREATE is True:
+        opponent = player.RandomUniform()   #本当はランダム打ちのモンテカルロ木探索にしたい
     return play(target, opponent, play_num)

@@ -2,23 +2,43 @@
 
 import os, time
 import copy
+import torch
 import numpy as np
 import game
 import player
+import network
+import neural_player
 
 DEBUG = False    #デバッグ時はTrue
+RANDOM_CREATE = False   #True:ランダムに着手 False:学習済みのモデルを使用
 
 RECORD_NUM = 1000  #対局データ作成数
 TURN = 90   #1試合あたりのターン数
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "record")  #出力ディレクトリ
 os.makedirs(OUTPUT_DIR, exist_ok=True)  #出力ディレクトリの作成
 
-players = {
-    game.OWN_1: player.RandomUniform(),
-    game.OWN_2: player.RandomUniform(),
-    game.OPPONENT_1: player.RandomUniform(),
-    game.OPPONENT_2: player.RandomUniform()
-}
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "./output/best_model.pth")       #最善モデルの保存パス
+
+if RANDOM_CREATE is False:  #学習済みモデルを使用
+    if os.path.exists(MODEL_PATH):
+        model = network.Network()
+        model.load_state_dict(torch.load(MODEL_PATH, map_location=lambda storage, loc: storage))
+    else:
+        raise Exception("学習済みモデルがありません")
+
+    players = {
+        game.OWN_1: neural_player.DQNPlayer(model),
+        game.OWN_2: neural_player.DQNPlayer(model),
+        game.OPPONENT_1: neural_player.DQNPlayer(model),
+        game.OPPONENT_2: neural_player.DQNPlayer(model)
+    }
+elif RANDOM_CREATE is True:
+    players = {
+        game.OWN_1: player.RandomUniform(),
+        game.OWN_2: player.RandomUniform(),
+        game.OPPONENT_1: player.RandomUniform(),
+        game.OPPONENT_2: player.RandomUniform()
+    }
 # players = {
 #     game.OWN_1: player.RandomMTS(100, 5),
 #     game.OWN_2: player.RandomMTS(100, 5),
