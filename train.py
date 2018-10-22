@@ -259,6 +259,8 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
 
             model.eval()    #評価モード
             if (record_index+i)%50 == 0:   #学習50回ごとにモデルが最善か確認
+                if RANDOM_CREATE is False:
+                    max_win_ratio = 0.5 #学習済みモデルに勝ち越せれば、モデルを更新
                 ratio = evaluate.evaluate_model(model, 10)  #勝率
                 print("played {} games for evaluating".format(10))
                 print("win ratio:{}".format(ratio))
