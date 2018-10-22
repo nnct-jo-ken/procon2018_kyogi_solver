@@ -10,7 +10,7 @@ import network
 import neural_player
 
 DEBUG = False    #デバッグ時はTrue
-RANDOM_CREATE = False   #True:ランダムに着手 False:学習済みのモデルを使用
+RANDOM_CREATE = True   #True:ランダムに着手 False:学習済みのモデルを使用
 
 RECORD_NUM = 1000  #対局データ作成数
 TURN = 90   #1試合あたりのターン数
