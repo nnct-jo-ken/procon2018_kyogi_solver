@@ -31,7 +31,7 @@ class Network(nn.Module):
         out = F.relu(self.conv4(out))
         out = F.max_pool2d(out, kernel_size=x.shape[2:])
 
-        b,c,h,w = out.shape #batch channnel height width
+        b,_,_,_ = out.shape #batch channnel height width
         out = F.relu(self.fc1(out.reshape(b,-1)))
         out = F.relu(self.fc2(out))
         out = F.relu(self.fc3(out))
