@@ -33,18 +33,21 @@ if RANDOM_CREATE is False:  #学習済みモデルを使用
         game.OPPONENT_2: neural_player.DQNPlayer(model)
     }
 elif RANDOM_CREATE is True:
+    #完全ランダムくん
+    # players = {
+    #     game.OWN_1: player.RandomUniform(),
+    #     game.OWN_2: player.RandomUniform(),
+    #     game.OPPONENT_1: player.RandomUniform(),
+    #     game.OPPONENT_2: player.RandomUniform()
+    # }
+
+    #ランダムモンテカルロ木探索くん
     players = {
-        game.OWN_1: player.RandomUniform(),
-        game.OWN_2: player.RandomUniform(),
-        game.OPPONENT_1: player.RandomUniform(),
-        game.OPPONENT_2: player.RandomUniform()
+        game.OWN_1: player.RandomMTS(100, 5),
+        game.OWN_2: player.RandomMTS(100, 5),
+        game.OPPONENT_1: player.RandomMTS(100, 5),
+        game.OPPONENT_2: player.RandomMTS(100, 5)
     }
-# players = {
-#     game.OWN_1: player.RandomMTS(100, 5),
-#     game.OWN_2: player.RandomMTS(100, 5),
-#     game.OPPONENT_1: player.RandomMTS(100, 5),
-#     game.OPPONENT_2: player.RandomMTS(100, 5)
-# }
 
 def save_record(field, a1_best_moves, a2_best_moves, won):
     if DEBUG is True: return    #デバッグ時はファイル生成をしない

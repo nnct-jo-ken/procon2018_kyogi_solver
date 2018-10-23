@@ -6,7 +6,7 @@ import copy
 import numpy as np
 import game
 
-DEBUG = False
+DEBUG = True
 
 TURN = 30   #探索するターン数 途中からだから、減らしている
 
@@ -101,7 +101,11 @@ class RandomMTS(Player):    #モンテカルロ木探索
             if DEBUG is True:
                 print(hand) #この部分の処理が行われるタイミングを確認
             if hand is not None:    #次の手があれば
-                field.state = field.move(field.state, player, hand, False)
+                # field.state = field.move(field.state, player, hand, False)
+                if field.check_team(player) == game.OWN:
+                    field.own_state = field.move(field.own_state, player, hand, True) #着手させる
+                elif field.check_team(player) == game.OPPONENT:
+                    field.opponent_state = field.move(field.opponent_state, player, hand, True) #着手させる
             player = next_players[player]   #次のプレーヤーにする
 
         for _ in range(TURN):   #ターン数まで繰り返す   _はカウンタ変数を使わないという意味
@@ -110,9 +114,13 @@ class RandomMTS(Player):    #モンテカルロ木探索
             for turn in players: #各エージェントごとに行動させる
                 hand = players[player].select(field, turn)
                 if hand is not None:    #次の手があれば
-                    field.state = field.move(field.state, turn, hand, False)
+                    # field.state = field.move(field.state, turn, hand, False)
+                    if field.check_team(turn) == game.OWN:
+                        field.own_state = field.move(field.own_state, player, hand, False) #着手させる
+                    elif field.check_team(turn) == game.OPPONENT:
+                        field.opponent_state = field.move(field.opponent_state, player, hand, False) #着手させる
 
-        return field.judge(field.state)      #勝者
+        return field.judge(field.own_state, field.opponent_state)      #勝者
 
 class MTSNode:
     def __init__(self, parent, field, player, max_depth=-1, move=None):
@@ -131,7 +139,7 @@ class MTSNode:
         if max_depth == 0:  #探索深さ0 => 末端だから、探索しない
             self.hands = []
         else:
-            self.hands = self.field.hands(self.field, self.player)  #着手可能な手を全て取得
+            self.hands = self.field.hands(self.field.own_state, self.field.opponent_state, self.player)  #着手可能な手を全て取得
             if len(self.hands) == 0:   #どの手も打てない　たぶん、こんなことは起きない
                 self.hands.append(None)
 
@@ -143,7 +151,10 @@ class MTSNode:
         if move is None:
             child = MTSNode(self, self.field, next_players[self.player], self.max_depth-1, None) #パスして、次のプレーヤーにする
         else:
-            self.field.state = self.field.move(self.field.state, self.player, move, True) #着手させる
+            if self.field.check_team(self.player) == game.OWN:
+                self.field.own_state = self.field.move(self.field.own_state, self.player, move, True) #着手させる
+            elif self.field.check_team(self.player) == game.OPPONENT:
+                self.field.opponent_state = self.field.move(self.field.opponent_state, self.player, move, True) #着手させる
             child = MTSNode(self, self.field, next_players[self.player], self.max_depth-1, move) #着手させた後の子ノードを代入
         self.children.append(child)
         print("child max_depth {}".format(child.max_depth))
