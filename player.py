@@ -6,7 +6,7 @@ import copy
 import numpy as np
 import game
 
-DEBUG = True
+DEBUG = False
 
 TURN = 30   #探索するターン数 途中からだから、減らしている
 
@@ -54,10 +54,13 @@ class RandomMTS(Player):    #モンテカルロ木探索
         self.max_depth = max_depth
 
     def select(self, field, player):
-        return self.search_and_select(field, player, self.playout_num, self.max_depth)
+        if DEBUG is True:
+            print(player, "selected")
+            field.print_field()
+        return self.search_and_select(field, field.own_state, field.opponent_state, player, self.playout_num, self.max_depth)
 
-    def search_and_select(self, field, player, playout_num, max_depth):
-        root_node = MTSNode(None, field, player, max_depth) #現在の状態をルートノードとして設定
+    def search_and_select(self, field, own_state, opponent_state, player, playout_num, max_depth):
+        root_node = MTSNode(None, field, own_state, opponent_state, player, max_depth) #現在の状態をルートノードとして設定
         for _ in range(playout_num):
             node = root_node    #まず、親ノードを設定
 
@@ -116,20 +119,22 @@ class RandomMTS(Player):    #モンテカルロ木探索
                 if hand is not None:    #次の手があれば
                     # field.state = field.move(field.state, turn, hand, False)
                     if field.check_team(turn) == game.OWN:
-                        field.own_state = field.move(field.own_state, player, hand, False) #着手させる
+                        field.own_state = field.move(field.own_state, player, hand, True) #着手させる
                     elif field.check_team(turn) == game.OPPONENT:
-                        field.opponent_state = field.move(field.opponent_state, player, hand, False) #着手させる
+                        field.opponent_state = field.move(field.opponent_state, player, hand, True) #着手させる
 
         return field.judge(field.own_state, field.opponent_state)      #勝者
 
 class MTSNode:
-    def __init__(self, parent, field, player, max_depth=-1, move=None):
+    def __init__(self, parent, field, own_state, opponent_state, player, max_depth=-1, move=None):
         if DEBUG is True:
             print(player)       #エージェントを確認
             print(max_depth)    #探索深さを確認
         self.parent = parent    #親ノード
 
         self.field = field      #フィールド（いろいろな情報てんこ盛り）
+        self.own_state = own_state
+        self.opponent_state = opponent_state
         self.player = player    #エージェント
 
         self.move = move        #選んだ手
@@ -139,7 +144,7 @@ class MTSNode:
         if max_depth == 0:  #探索深さ0 => 末端だから、探索しない
             self.hands = []
         else:
-            self.hands = self.field.hands(self.field.own_state, self.field.opponent_state, self.player)  #着手可能な手を全て取得
+            self.hands = self.field.hands(self.own_state, self.opponent_state, self.player)  #着手可能な手を全て取得
             if len(self.hands) == 0:   #どの手も打てない　たぶん、こんなことは起きない
                 self.hands.append(None)
 
@@ -152,12 +157,15 @@ class MTSNode:
             child = MTSNode(self, self.field, next_players[self.player], self.max_depth-1, None) #パスして、次のプレーヤーにする
         else:
             if self.field.check_team(self.player) == game.OWN:
-                self.field.own_state = self.field.move(self.field.own_state, self.player, move, True) #着手させる
+                own_state = self.field.move(self.own_state, self.player, move, False) #着手させる
+                opponent_state = self.opponent_state
             elif self.field.check_team(self.player) == game.OPPONENT:
-                self.field.opponent_state = self.field.move(self.field.opponent_state, self.player, move, True) #着手させる
-            child = MTSNode(self, self.field, next_players[self.player], self.max_depth-1, move) #着手させた後の子ノードを代入
+                opponent_state = self.field.move(self.opponent_state, self.player, move, False) #着手させる
+                own_state = self.own_state
+            child = MTSNode(self, self.field, own_state, opponent_state, next_players[self.player], self.max_depth-1, move) #着手させた後の子ノードを代入
         self.children.append(child)
-        print("child max_depth {}".format(child.max_depth))
+        if DEBUG is True:
+            print("child max_depth {}".format(child.max_depth))
         return child
 
     def select_node(self):  #期待値が最大の子ノードを返す
