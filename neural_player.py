@@ -1,12 +1,17 @@
 # coding: utf-8
 
+import random
 import copy
 import numpy as np
 import torch
 import game
 import player
+import recently_hands
 
 DEBUG = False
+
+a1_recently_hands = recently_hands.Recently_hands()
+a2_recently_hands = recently_hands.Recently_hands()
 
 class DQNPlayer(player.Player):
     def __init__(self, model):
@@ -46,9 +51,27 @@ class DQNPlayer(player.Player):
             hand = field.conv_direction_hand(move_direction, own_state, opponent_state, [field.conv_turn_pos(player)['x'], field.conv_turn_pos(player)['y']])
             if DEBUG is True:
                 print("dict : ", move_direction, "hand : ", hand)
+            if player == game.OWN_1:
+                if a1_recently_hands.check(times = 3) is False: continue
+            elif player == game.OWN_2:
+                if a2_recently_hands.check(times = 3) is False: continue
             if hand is None: continue   #不可能な手だったら、次点の手について処理する
 
+            if player == game.OWN_1:
+                a1_recently_hands.put(hand)
+            elif player == game.OWN_2:
+                a2_recently_hands.put(hand)
+            print("hand", hand)
             return hand
+
+        #continueしすぎて可能な手を全部スキップした（なんで？）
+        hands = field.hands(field.own_state, field.opponent_state, player)  #可能な手
+        if len(hands) == 0: #手がない
+            hand = field.conv_direction_hand(0 , own_state, opponent_state, [field.conv_turn_pos(player)['x'], field.conv_turn_pos(player)['y']])   #停留
+        else:
+            choice = random.randrange(len(hands))   #ランダムに一つ選択
+            hand = hands[choice]
+        return hand
 
 # class MinimaxDQNPlayer(player.Player):
 #     def __init__(self, model):
