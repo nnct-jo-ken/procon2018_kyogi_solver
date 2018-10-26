@@ -222,6 +222,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
                 print("win ratio:{}".format(ratio))
                 if max_win_ratio <= ratio:  #勝率が今までの最高値より高い
                     print("max update:{0} >= {1}".format(ratio, max_win_ratio))
+                    update_times += 1
                     if RANDOM_CREATE is False: print("model updated times", update_times)
                     max_win_ratio = ratio
                     torch.save(model.state_dict(), BEST_MODEL_PATH)  #ベストモデルの保存
@@ -269,6 +270,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
                 print("win ratio:{}".format(ratio))
                 if max_win_ratio <= ratio:  #勝率が今までの最高値より高い
                     print("max update:{0} >= {1}".format(ratio, max_win_ratio))
+                    update_times += 1
                     if RANDOM_CREATE is False: print("model updated times", update_times)
                     max_win_ratio = ratio
                     torch.save(model.state_dict(), BEST_MODEL_PATH)  #ベストモデルの保存
