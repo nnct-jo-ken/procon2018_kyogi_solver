@@ -28,6 +28,8 @@ OPTIMIZER_PATH = os.path.join(os.path.dirname(__file__), "./output/optimizer.pth
 RECORD_LIST_PATH = os.path.join(os.path.dirname(__file__), "./recordlist_train")         #対局データ一覧表（学習用）の保存パス
 TEST_RECORD_LIST_PATH = os.path.join(os.path.dirname(__file__), "./recordlist_test") #対局データ一覧表（テスト用）の保存パス
 
+update_times = 0    #モデルの更新回数
+
 def test(model):    #未学習のデータを使って、正しく予測できているのか確認
     '''
     エージェント1について評価する
@@ -220,6 +222,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
                 print("win ratio:{}".format(ratio))
                 if max_win_ratio <= ratio:  #勝率が今までの最高値より高い
                     print("max update:{0} >= {1}".format(ratio, max_win_ratio))
+                    if RANDOM_CREATE is False: print("model updated times", update_times)
                     max_win_ratio = ratio
                     torch.save(model.state_dict(), BEST_MODEL_PATH)  #ベストモデルの保存
                 else:
@@ -266,6 +269,7 @@ for epoch in range(1, EPOCH+1):   #エポックを回す
                 print("win ratio:{}".format(ratio))
                 if max_win_ratio <= ratio:  #勝率が今までの最高値より高い
                     print("max update:{0} >= {1}".format(ratio, max_win_ratio))
+                    if RANDOM_CREATE is False: print("model updated times", update_times)
                     max_win_ratio = ratio
                     torch.save(model.state_dict(), BEST_MODEL_PATH)  #ベストモデルの保存
                 else:
