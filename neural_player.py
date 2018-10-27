@@ -52,9 +52,9 @@ class DQNPlayer(player.Player):
             if DEBUG is True:
                 print("dict : ", move_direction, "hand : ", hand)
             if player == game.OWN_1:
-                if a1_recently_hands.check(times = 3) is False: continue
+                if a1_recently_hands.check(times = 2) is False: continue
             elif player == game.OWN_2:
-                if a2_recently_hands.check(times = 3) is False: continue
+                if a2_recently_hands.check(times = 2) is False: continue
             if hand is None: continue   #不可能な手だったら、次点の手について処理する
 
             if player == game.OWN_1:
