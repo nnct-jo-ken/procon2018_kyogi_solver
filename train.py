@@ -15,7 +15,7 @@ import game
 import evaluate
 
 TURN = 90
-RANDOM_CREATE = False   #True:ランダムに着手 False:学習済みのモデルを使用
+RANDOM_CREATE = True   #True:ランダムに着手 False:学習済みのモデルを使用
 
 LR = 0.0001   #学習率(learning rate)
 BATCH_GAME_SIZE = 1 #一度に学習する試合数
