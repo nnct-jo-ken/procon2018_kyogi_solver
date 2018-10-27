@@ -8,7 +8,7 @@ import game
 import player
 import recently_hands
 
-DEBUG = True
+DEBUG = False
 
 a1_recently_hands = recently_hands.Recently_hands()
 a2_recently_hands = recently_hands.Recently_hands()
@@ -64,11 +64,14 @@ class DQNPlayer(player.Player):
 
             if player == game.OWN_1:
                 a1_recently_hands.put(hand)
-                # print(a1_recently_hands.hands)
+                if DEBUG is True:
+                    print("a1_recently_hands.hands", a1_recently_hands.hands)
             elif player == game.OWN_2:
                 a2_recently_hands.put(hand)
-                # print(a2_recently_hands.hands)
-            print("hand", hand)
+                if DEBUG is True:
+                    print("a2_recently_hands.hands", a2_recently_hands.hands)
+            if DEBUG is True:
+                print("hand", hand)
             return hand
 
         print("player:", player, " put random hand")

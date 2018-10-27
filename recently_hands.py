@@ -1,5 +1,7 @@
 # coding: utf-8
 
+DEBUG = False
+
 class Recently_hands:
     def __init__(self, hands = None):
         if type(hands) is type([]):
@@ -26,7 +28,8 @@ class Recently_hands:
 
     def check(self, hand, times = 3):
         if self.hands.count(hand) >= times: #同じ手が{times}回以上行われている
-            print("recently hands", self.hands, "count", self.hands.count(hand))
+            if DEBUG is True:
+                print("recently hands", self.hands, "count", self.hands.count(hand))
             return False    #同じ手が規定数以上
 
         return True #同じ手が規定数以内
