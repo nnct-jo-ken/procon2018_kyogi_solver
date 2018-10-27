@@ -183,7 +183,8 @@ class field:
                             continue
                         else:   #プレーヤーがいない
                             hands.append([{'x':x+i, 'y':y+j} , False]) #移動
-                            hands.append([{'x':x+i, 'y':y+j} , True]) #ひっくり返す
+                            if (player == OWN_1 or player == OWN_2) and self.value[x+i][y+j] < 0: #自陣で、タイル得点がマイナス
+                                hands.append([{'x':x+i, 'y':y+j} , True]) #ひっくり返す
         
         if DEBUG is True:
             print("player:{0} hands:{1}".format(player, hands))
