@@ -35,11 +35,13 @@ class field:
         self.opponent_points = []   #敵のターンごとに獲得した点数
 
     def create_rand_field(self):    #フィールドを生成し、タイルに適当な点数を割り振る
-        sum_tile = random.randint(80, 144)  #タイルの数
-        self.width = random.randint(7, 12)  #縦の大きさをランダムに決定 80//12=7より、7が一辺の最小サイズ
-        while sum_tile // self.width > 12:  #heightが13以上だとルールに反しているから、12以下になるまで乱数生成
-            self.width = random.randint(7, 12)
-        self.height = sum_tile // self.width    #横の大きさをランダムに決定 上のループで、ルールに適合するはず
+        # sum_tile = random.randint(80, 88)  #タイルの数
+        # self.width = random.randint(7, 12)  #縦の大きさをランダムに決定 80//12=7より、7が一辺の最小サイズ
+        # while sum_tile // self.width > 12:  #heightが13以上だとルールに反しているから、12以下になるまで乱数生成
+        #     self.width = random.randint(7, 12)
+        # self.height = sum_tile // self.width    #横の大きさをランダムに決定 上のループで、ルールに適合するはず
+        self.width = 11
+        self.height = 8
         self.value = np.resize(self.value, (self.width, self.height))
         self.own_state = np.resize(self.own_state, (self.width, self.height))
         self.opponent_state = np.resize(self.opponent_state, (self.width, self.height))
@@ -67,9 +69,9 @@ class field:
         for i in range(0, self.width):
             for j in range(0, self.height):
 
-                rand_value = random.randint(-16, 16*9)  #マイナスの点数を10%くらいに抑えるため
+                rand_value = random.randint(-10, 10*18)  #マイナスの点数を5%くらいに抑えるため
                 if rand_value > 0:
-                    rand_value //= 9   #正の点数は、範囲に収まるように、9で割った商を代入
+                    rand_value //= 18   #正の点数は、範囲に収まるように、9で割った商を代入
 
                 self.value[i][j] = rand_value
 
