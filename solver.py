@@ -10,7 +10,7 @@ import os
 import torch
 import torch.nn as nn
 
-NEURAL_PLAYER = True    #True:機械学習 False:モンテカルロ木探索
+NEURAL_PLAYER = False    #True:機械学習 False:モンテカルロ木探索
 
 def solve(field):
     '''
