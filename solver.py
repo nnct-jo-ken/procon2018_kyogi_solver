@@ -30,11 +30,11 @@ def solve(field):
     own_a1_hand = player.select(field, game.OWN_1)
     own_a2_hand = player.select(field, game.OWN_2)
 
-    print("hands history")
-    print(len(neural_player.a1_recently_hands.hands))
-    print(neural_player.a1_recently_hands.hands)
-    print(len(neural_player.a2_recently_hands.hands))
-    print(neural_player.a2_recently_hands.hands)
+    # print("hands history")
+    # print(len(neural_player.a1_recently_hands.hands))
+    # print(neural_player.a1_recently_hands.hands)
+    # print(len(neural_player.a2_recently_hands.hands))
+    # print(neural_player.a2_recently_hands.hands)
     print("own_a1_hand", own_a1_hand)
     print("own_a2_hand", own_a2_hand)
 

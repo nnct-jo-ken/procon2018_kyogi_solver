@@ -64,6 +64,7 @@ class DQNPlayer(player.Player):
             print("hand", hand)
             return hand
 
+        print("put random hand")
         #continueしすぎて可能な手を全部スキップした（なんで？）
         hands = field.hands(field.own_state, field.opponent_state, player)  #可能な手
         if len(hands) == 0: #手がない
