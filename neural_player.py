@@ -8,7 +8,7 @@ import game
 import player
 import recently_hands
 
-DEBUG = False
+DEBUG = True
 
 a1_recently_hands = recently_hands.Recently_hands()
 a2_recently_hands = recently_hands.Recently_hands()
@@ -46,25 +46,32 @@ class DQNPlayer(player.Player):
             print(out)
         max_sorted = torch.sort(out, descending=True)   #価値が高い順に並べる
         sorted_directions = max_sorted[1][0].tolist()   #移動方向のみのリストを生成
+        # print("sorted_direction", sorted_directions)
 
         for move_direction in sorted_directions:
             hand = field.conv_direction_hand(move_direction, own_state, opponent_state, [field.conv_turn_pos(player)['x'], field.conv_turn_pos(player)['y']])
             if DEBUG is True:
                 print("dict : ", move_direction, "hand : ", hand)
             if player == game.OWN_1:
-                if a1_recently_hands.check(times = 3) is False: continue
+                if a1_recently_hands.check(hand, times = 3) is False:
+                    # print("continue hand", hand)
+                    continue
             elif player == game.OWN_2:
-                if a2_recently_hands.check(times = 3) is False: continue
+                if a2_recently_hands.check(hand, times = 3) is False:
+                    # print("continue hand", hand)
+                    continue
             if hand is None: continue   #不可能な手だったら、次点の手について処理する
 
             if player == game.OWN_1:
                 a1_recently_hands.put(hand)
+                # print(a1_recently_hands.hands)
             elif player == game.OWN_2:
                 a2_recently_hands.put(hand)
+                # print(a2_recently_hands.hands)
             print("hand", hand)
             return hand
 
-        print("put random hand")
+        print("player:", player, " put random hand")
         #continueしすぎて可能な手を全部スキップした（なんで？）
         hands = field.hands(field.own_state, field.opponent_state, player)  #可能な手
         if len(hands) == 0: #手がない

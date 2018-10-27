@@ -24,9 +24,9 @@ class Recently_hands:
         except IndexError:
             return None
 
-    def check(self, times = 3):
-        for hand in self.hands:
-            if self.hands.count(hand) >= times: #同じ手が{times}回以上行われている
-                return False    #同じ手が規定数以上
+    def check(self, hand, times = 3):
+        if self.hands.count(hand) >= times: #同じ手が{times}回以上行われている
+            # print("recently hands", self.hands, "count", self.hands.count(hand))
+            return False    #同じ手が規定数以上
 
         return True #同じ手が規定数以内
