@@ -50,6 +50,25 @@ class DQNPlayer(player.Player):
 
         for move_direction in sorted_directions:
             hand = field.conv_direction_hand(move_direction, own_state, opponent_state, [field.conv_turn_pos(player)['x'], field.conv_turn_pos(player)['y']])
+            
+            # 近づかないように
+            if hand is not None:
+                if player == game.OWN_2:
+                    a1_x = field.own_a1['x']
+                    a1_y = field.own_a1['y']
+                    hand_x = hand[0]['x']
+                    hand_y = hand[0]['y']
+
+                    dis_x = hand_x - a1_x
+                    dis_y = hand_y - a1_y
+
+                    if dis_x < 2 or dis_y < 2:
+                        continue
+
+            # 停留をナシにする
+            if move_direction == 0:
+                continue
+
             if DEBUG is True:
                 print("dict : ", move_direction, "hand : ", hand)
             if player == game.OWN_1:
