@@ -4,7 +4,7 @@ import socket
 import game
 import solver
 
-DEBUG = True
+DEBUG = False
 
 field = game.field()        #フィールド作成
 field.clear()   #フィールド情報をクリア
@@ -44,4 +44,3 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket1:
         buffer = solver.solve(field)
         print(buffer)
         socket1.send(buffer.encode('utf-8'))
-        socket1.recv(8)

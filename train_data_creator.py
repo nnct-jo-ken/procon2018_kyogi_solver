@@ -11,8 +11,14 @@ def get_partial(record):    #対局データから、各種データを分離
     try:
         npz = np.load(record)
         X_value = npz["X_value"]
-        X_status = npz["X_status"]
-        X_players = npz["X_players"]
+        X_own_status = npz["X_own_status"]
+        X_opponent_status = npz["X_opponent_status"]
+        X_own_points = npz["X_own_points"]
+        X_opponent_points = npz["X_opponent_points"]
+        X_a1_poss = npz["X_a1_poss"]
+        X_a2_poss = npz["X_a2_poss"]
+        X_a1_best_moves = npz["X_a1_best_moves"]
+        X_a2_best_moves = npz["X_a2_best_moves"]
         won = npz["won"]
 
         # if DEBUG is True: #デバッグ用 読み込んだ値を表示
@@ -21,7 +27,7 @@ def get_partial(record):    #対局データから、各種データを分離
         #     print("player\n{}".format(X_players))
         #     print("won\n{}".format(won))
 
-        return X_value, X_status, X_players, won
+        return X_value, X_own_status, X_opponent_status, X_own_points, X_opponent_points, X_a1_poss, X_a2_poss, X_a1_best_moves, X_a2_best_moves, won
 
     except: #データが得られない
         return None
@@ -42,8 +48,14 @@ def get_dataset(record_list_path, batch_size, record_index):
     # dataset = []    #データセット {バッチサイズ}回分の対局データを要素別に格納 対局ごとにリストを作成していた時の名残
 
     value_list = []
-    state_list = []
-    player_list = []
+    own_state_list = []
+    opponent_state_list = []
+    own_point_list = []
+    opponent_point_list = []
+    a1_pos_list = []
+    a2_pos_list = []
+    a1_best_move_list = []
+    a2_best_move_list = []
     won_list = []
 
     # 一覧から全行読み取って一括処理する場合
@@ -60,33 +72,28 @@ def get_dataset(record_list_path, batch_size, record_index):
         get_val = get_partial(record)
         if get_val is None: #事故った or 読み込むものがなかった
             return None
-        value, status, players, won = get_val
+        value, own_status, opponent_status, own_points, opponent_points, a1_poss, a2_poss, a1_best_moves, a2_best_moves, won = get_val
 
         #大きさをフィールドの最大値に固定
         value_pad = np.pad(value, [(0, game.MAX_BOARD_SIZE - value.shape[0]),(0, game.MAX_BOARD_SIZE - value.shape[1])], 'constant')
-        status_pad = np.pad(status, [(0,0),(0, game.MAX_BOARD_SIZE - value.shape[0]),(0, game.MAX_BOARD_SIZE - value.shape[1])], 'constant')
-
-        # 1対局で得られたデータをリストに固め、それをdatasetに追加していく
-        # dataset.append([value, status, players, won])
-        # players = np.insert(players, 0, [0]).reshape(-1, 1)    #playersとstatusの長さを合わせる 先頭に0を追加
-        # for state, player in zip(status, players):
-        #     dataset.append([value, state, player, won])
-        #     # デバッグ用 データセットの中身を、ひとつずつ表示 1対局あたりターン数ぶん生成される
-        #     # print("\n\n\n\n\n\n\n\n\n")
-        #     # print(dataset[-1])
-        #     # print("\n\n\n\n\n\n\n\n\n")
+        own_status_pad = np.pad(own_status, [(0,0),(0, game.MAX_BOARD_SIZE - value.shape[0]),(0, game.MAX_BOARD_SIZE - value.shape[1])], 'constant')
+        opponent_status_pad = np.pad(opponent_status, [(0,0),(0, game.MAX_BOARD_SIZE - value.shape[0]),(0, game.MAX_BOARD_SIZE - value.shape[1])], 'constant')
+        a1_poss_pad = np.pad(a1_poss, [(0,0),(0, game.MAX_BOARD_SIZE - value.shape[0]),(0, game.MAX_BOARD_SIZE - value.shape[1])], 'constant')
+        a2_poss_pad = np.pad(a2_poss, [(0,0),(0, game.MAX_BOARD_SIZE - value.shape[0]),(0, game.MAX_BOARD_SIZE - value.shape[1])], 'constant')
 
         # player_list.append(0)  ##playersとstatusの長さを合わせる 先頭に0を追加
-        for state, player in zip(status_pad, players):
+        for own_state, opponent_state, own_point, opponent_point, a1_pos, a2_pos, a1_best_move, a2_best_move in zip(own_status_pad, opponent_status_pad, own_points, opponent_points, a1_poss_pad, a2_poss_pad, a1_best_moves, a2_best_moves):
             value_list.append(value_pad)
-            state_list.append(state)
-            player_list.append(player)
+            own_state_list.append(own_state)
+            opponent_state_list.append(opponent_state)
+            own_point_list.append(own_point)
+            opponent_point_list.append(opponent_point)
+            a1_pos_list.append(a1_pos)
+            a2_pos_list.append(a2_pos)
+            a1_best_move_list.append(a1_best_move)
+            a2_best_move_list.append(a2_best_move)
             won_list.append(won)
 
-    dataset = [np.array(value_list), np.array(state_list), np.array(player_list), np.array(won_list)]
-
-    # print(value_list)
-
-    # random.shuffle(dataset)  #時間の相関をなくす
+    dataset = [np.array(value_list), np.array(own_state_list), np.array(opponent_state_list), np.array(own_point_list), np.array(opponent_point_list), np.array(a1_pos_list), np.array(a2_pos_list), np.array(a1_best_move_list), np.array(a2_best_move_list), np.array(won_list)]
 
     return dataset

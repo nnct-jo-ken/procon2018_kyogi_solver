@@ -3,11 +3,14 @@
 import random
 import game
 import neural_player
+import player as basic_player
 import network
 
 import os
 import torch
 import torch.nn as nn
+
+NEURAL_PLAYER = True    #True:機械学習 False:モンテカルロ木探索
 
 def solve(field):
     '''
@@ -20,12 +23,22 @@ def solve(field):
         model = network.Network()
         model.load_state_dict(torch.load(MODEL_PATH, map_location=lambda storage, loc: storage))
 
-    player = neural_player.DQNPlayer(model)   # ***後で、きちんと書く！***
+    if NEURAL_PLAYER is True:   #機械学習
+        player = neural_player.DQNPlayer(model)   # ***後で、きちんと書く！***
+    elif NEURAL_PLAYER is False:    #モンテカルロ木探索
+        player = basic_player.RandomMTS(100, 5)
+    print("***************************************************************")
     own_a1_hand = player.select(field, game.OWN_1)
     own_a2_hand = player.select(field, game.OWN_2)
 
-    print(own_a1_hand)
-    print(own_a2_hand)
+    # print("hands history")
+    # print(len(neural_player.a1_recently_hands.hands))
+    # print(neural_player.a1_recently_hands.hands)
+    # print(len(neural_player.a2_recently_hands.hands))
+    # print(neural_player.a2_recently_hands.hands)
+    print("own_a1_hand", own_a1_hand)
+    print("own_a2_hand", own_a2_hand)
+    print("***************************************************************")
 
     # GUIとsolverで座標軸の扱い方が異なるから、逆にする
 
