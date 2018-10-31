@@ -13,7 +13,8 @@
 
 ## 使用方法
 本リポジトリをcloneし、以下の手順で実行すると動作します。  
-ソルバーとして動作させるには、事前に[GUI](https://github.com/nnct-jo-ken/procon2018_kyogi_GUI)を起動させておいてください。
+ソルバーとして動作させるには、事前に[GUI](https://github.com/nnct-jo-ken/procon2018_kyogi_GUI)を起動させておいてください。  
+`colaboratory.ipynb`を使用すると、Colaboratoryを利用して対局データの生成と学習を行うことができます。
 
 ```
 # 対局データの生成
